@@ -38,6 +38,44 @@ public class PacientesController(AppDbContext db) : ControllerBase
         return p == null ? NotFound(new { mensaje = "Paciente no encontrado" }) : Ok(p);
     }
 
+    // GET api/pacientes/5/historial
+    [HttpGet("{id:int}/historial")]
+    public async Task<ActionResult<HistorialPacienteResponse>> Historial(int id)
+    {
+        var paciente = await Proyectar(PacientesVisibles().Where(p => p.Id == id)).FirstOrDefaultAsync();
+        if (paciente == null) return NotFound(new { mensaje = "Paciente no encontrado" });
+
+        var ahora = DateTime.UtcNow;
+        var visitas = await db.Visitas
+            .Where(v => v.PacienteId == id)
+            .OrderByDescending(v => v.FechaRegistro ?? v.FechaProgramada)
+            .Select(v => new VisitaResponse(
+                v.Id,
+                v.PacienteId, v.Paciente!.Nombre,
+                v.Paciente.Raza!.Especie!.Nombre, v.Paciente.Duenio!.Nombre,
+                v.ServicioId, v.Servicio!.Nombre,
+                v.TecnicoId,
+                db.Users.Where(u => u.Id == v.TecnicoId).Select(u => u.NombreCompleto).FirstOrDefault(),
+                v.FechaProgramada,
+                v.Estado.ToString(),
+                v.Estado == EstadoVisita.Programada && v.FechaProgramada < ahora,
+                v.FechaRegistro,
+                v.PesoKg, v.AlturaCm, v.Temperatura,
+                v.Condicion,
+                v.Latitud, v.Longitud,
+                v.FotoUrl))
+            .ToListAsync();
+
+        var realizadas = visitas.Where(v => v.Estado == nameof(EstadoVisita.Realizada)).ToList();
+
+        return Ok(new HistorialPacienteResponse(
+            paciente,
+            visitas.Count,
+            realizadas.Count,
+            realizadas.Max(v => v.FechaRegistro),
+            visitas));
+    }
+
     // POST api/pacientes
     [HttpPost]
     public async Task<ActionResult<PacienteResponse>> Crear(PacienteRequest req)
