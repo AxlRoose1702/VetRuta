@@ -1,0 +1,11 @@
+﻿namespace VetRuta.Domain.Entities
+{
+    public class Duenio
+    {
+        public int Id { get; set; }
+        public string Nombre { get; set; } = "";
+        public string? Telefono { get; set; }
+        public string? Direccion { get; set; }
+        public ICollection<Paciente> Pacientes { get; set; } = new List<Paciente>();
+    }
+}
