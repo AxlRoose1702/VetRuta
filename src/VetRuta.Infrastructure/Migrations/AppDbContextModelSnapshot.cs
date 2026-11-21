@@ -155,6 +155,32 @@ namespace VetRuta.Infrastructure.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("VetRuta.Domain.Entities.Duenio", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Direccion")
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("Telefono")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Dueños");
+                });
+
             modelBuilder.Entity("VetRuta.Domain.Entities.Especie", b =>
                 {
                     b.Property<int>("Id")
@@ -165,11 +191,51 @@ namespace VetRuta.Infrastructure.Migrations
 
                     b.Property<string>("Nombre")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Nombre")
+                        .IsUnique();
+
                     b.ToTable("Especies");
+                });
+
+            modelBuilder.Entity("VetRuta.Domain.Entities.Paciente", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("DuenoId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("FechaNacimiento")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("RazaId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TecnicoId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DuenoId");
+
+                    b.HasIndex("RazaId");
+
+                    b.HasIndex("TecnicoId");
+
+                    b.ToTable("Pacientes");
                 });
 
             modelBuilder.Entity("VetRuta.Domain.Entities.Raza", b =>
@@ -185,11 +251,13 @@ namespace VetRuta.Infrastructure.Migrations
 
                     b.Property<string>("Nombre")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("EspecieId");
+                    b.HasIndex("EspecieId", "Nombre")
+                        .IsUnique();
 
                     b.ToTable("Razas");
                 });
@@ -207,7 +275,8 @@ namespace VetRuta.Infrastructure.Migrations
 
                     b.Property<string>("Nombre")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<decimal>("Precio")
                         .HasPrecision(10, 2)
@@ -215,7 +284,74 @@ namespace VetRuta.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Nombre")
+                        .IsUnique();
+
                     b.ToTable("Servicios");
+                });
+
+            modelBuilder.Entity("VetRuta.Domain.Entities.Visita", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal?>("AlturaCm")
+                        .HasPrecision(6, 2)
+                        .HasColumnType("decimal(6,2)");
+
+                    b.Property<string>("Condicion")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("Estado")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("FechaProgramada")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("FechaRegistro")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("FotoUrl")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<double?>("Latitud")
+                        .HasColumnType("float");
+
+                    b.Property<double?>("Longitud")
+                        .HasColumnType("float");
+
+                    b.Property<int>("PacienteId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal?>("PesoKg")
+                        .HasPrecision(6, 2)
+                        .HasColumnType("decimal(6,2)");
+
+                    b.Property<int>("ServicioId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TecnicoId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<decimal?>("Temperatura")
+                        .HasPrecision(4, 1)
+                        .HasColumnType("decimal(4,1)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PacienteId");
+
+                    b.HasIndex("ServicioId");
+
+                    b.HasIndex("TecnicoId", "FechaProgramada");
+
+                    b.ToTable("Visitas");
                 });
 
             modelBuilder.Entity("VetRuta.Domain.Entities.Zona", b =>
@@ -234,9 +370,13 @@ namespace VetRuta.Infrastructure.Migrations
 
                     b.Property<string>("Nombre")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Nombre")
+                        .IsUnique();
 
                     b.ToTable("Zonas");
                 });
@@ -274,7 +414,8 @@ namespace VetRuta.Infrastructure.Migrations
 
                     b.Property<string>("NombreCompleto")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
 
                     b.Property<string>("NormalizedEmail")
                         .HasMaxLength(256)
@@ -374,15 +515,64 @@ namespace VetRuta.Infrastructure.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("VetRuta.Domain.Entities.Paciente", b =>
+                {
+                    b.HasOne("VetRuta.Domain.Entities.Duenio", "Duenio")
+                        .WithMany("Pacientes")
+                        .HasForeignKey("DuenoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("VetRuta.Domain.Entities.Raza", "Raza")
+                        .WithMany()
+                        .HasForeignKey("RazaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("VetRuta.Infrastructure.Identity.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("TecnicoId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Duenio");
+
+                    b.Navigation("Raza");
+                });
+
             modelBuilder.Entity("VetRuta.Domain.Entities.Raza", b =>
                 {
                     b.HasOne("VetRuta.Domain.Entities.Especie", "Especie")
                         .WithMany("Razas")
                         .HasForeignKey("EspecieId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Especie");
+                });
+
+            modelBuilder.Entity("VetRuta.Domain.Entities.Visita", b =>
+                {
+                    b.HasOne("VetRuta.Domain.Entities.Paciente", "Paciente")
+                        .WithMany("Visitas")
+                        .HasForeignKey("PacienteId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("VetRuta.Domain.Entities.Servicio", "Servicio")
+                        .WithMany()
+                        .HasForeignKey("ServicioId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("VetRuta.Infrastructure.Identity.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("TecnicoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Paciente");
+
+                    b.Navigation("Servicio");
                 });
 
             modelBuilder.Entity("VetRuta.Infrastructure.Identity.ApplicationUser", b =>
@@ -394,16 +584,27 @@ namespace VetRuta.Infrastructure.Migrations
 
                     b.HasOne("VetRuta.Domain.Entities.Zona", "Zona")
                         .WithMany()
-                        .HasForeignKey("ZonaId");
+                        .HasForeignKey("ZonaId")
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("Medico");
 
                     b.Navigation("Zona");
                 });
 
+            modelBuilder.Entity("VetRuta.Domain.Entities.Duenio", b =>
+                {
+                    b.Navigation("Pacientes");
+                });
+
             modelBuilder.Entity("VetRuta.Domain.Entities.Especie", b =>
                 {
                     b.Navigation("Razas");
+                });
+
+            modelBuilder.Entity("VetRuta.Domain.Entities.Paciente", b =>
+                {
+                    b.Navigation("Visitas");
                 });
 
             modelBuilder.Entity("VetRuta.Infrastructure.Identity.ApplicationUser", b =>
