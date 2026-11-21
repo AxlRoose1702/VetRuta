@@ -40,7 +40,7 @@ public class DuenosController(AppDbContext db) : ControllerBase
     {
         if (string.IsNullOrWhiteSpace(req.Nombre)) return BadRequest(new { mensaje = "El nombre es obligatorio" });
 
-        var d = new Dueno { Nombre = req.Nombre.Trim(), Telefono = req.Telefono, Direccion = req.Direccion };
+        var d = new Duenio { Nombre = req.Nombre.Trim(), Telefono = req.Telefono, Direccion = req.Direccion };
         db.Dueños.Add(d);
         await db.SaveChangesAsync();
         return CreatedAtAction(nameof(Obtener), new { id = d.Id },
