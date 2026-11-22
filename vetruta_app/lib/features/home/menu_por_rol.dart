@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../../core/config.dart';
+import '../../core/api_client.dart';
+import '../../data/repositories/usuarios_repository.dart';
+import '../auth/auth_provider.dart';
+import '../medico/actividades_screen.dart';
+import '../medico/pacientes_medico_screen.dart';
 import '../tecnico/calendario_screen.dart';
 import '../tecnico/mapa_screen.dart';
 import '../tecnico/mis_pacientes_screen.dart';
@@ -38,11 +44,16 @@ List<OpcionMenu> opcionesDelRol(String rol) {
     case Roles.medico:
       return [
         OpcionMenu('Pacientes', 'Crear, asignar técnico e historial', Icons.pets,
-            (_) => const PantallaPendiente('Pacientes')),
+            (_) => const PacientesMedicoScreen()),
         OpcionMenu('Programar visita', 'Agendar una visita con un servicio', Icons.event_available,
             (_) => const ProgramarVisitaScreen()),
         OpcionMenu('Actividades de mis técnicos', 'Visitas hechas, pendientes y atrasadas',
-            Icons.list_alt, (_) => const PantallaPendiente('Actividades de mis técnicos')),
+            Icons.list_alt,
+            (_) => ActividadesScreen(
+                  titulo: 'Actividades de mis técnicos',
+                  cargarTecnicos: (ctx) => UsuariosRepository(ctx.read<ApiClient>())
+                      .tecnicosDeMedico(ctx.read<AuthProvider>().sesion!.usuarioId),
+                )),
         OpcionMenu('Tablero', 'Gráficas de mis técnicos', Icons.bar_chart,
             (_) => const PantallaPendiente('Tablero')),
       ];
