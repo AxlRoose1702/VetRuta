@@ -216,6 +216,16 @@ namespace VetRuta.Infrastructure.Migrations
                     b.Property<DateTime?>("FechaNacimiento")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("FotoUrl")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<double?>("Latitud")
+                        .HasColumnType("float");
+
+                    b.Property<double?>("Longitud")
+                        .HasColumnType("float");
+
                     b.Property<string>("Nombre")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -324,6 +334,10 @@ namespace VetRuta.Infrastructure.Migrations
 
                     b.Property<double?>("Longitud")
                         .HasColumnType("float");
+
+                    b.Property<string>("Observaciones")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
 
                     b.Property<int>("PacienteId")
                         .HasColumnType("int");
@@ -517,7 +531,7 @@ namespace VetRuta.Infrastructure.Migrations
 
             modelBuilder.Entity("VetRuta.Domain.Entities.Paciente", b =>
                 {
-                    b.HasOne("VetRuta.Domain.Entities.Duenio", "Duenio")
+                    b.HasOne("VetRuta.Domain.Entities.Duenio", "Dueno")
                         .WithMany("Pacientes")
                         .HasForeignKey("DuenoId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -534,7 +548,7 @@ namespace VetRuta.Infrastructure.Migrations
                         .HasForeignKey("TecnicoId")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.Navigation("Duenio");
+                    b.Navigation("Dueno");
 
                     b.Navigation("Raza");
                 });

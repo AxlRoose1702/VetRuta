@@ -1,8 +1,9 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Security.Claims;
 using VetRuta.Api.Dtos;
+using VetRuta.Domain;
 using VetRuta.Domain.Entities;
 using VetRuta.Infrastructure.Data;
 
@@ -13,7 +14,7 @@ namespace VetRuta.Api.Controllers;
 [Authorize]
 public class VisitasController(AppDbContext db, IWebHostEnvironment env) : ControllerBase
 {
-    private const string Programadores = $"{Roles.Root},{Roles.Director},{Roles.Medico}";
+    private const string Programadores = $"{Roles.Medico},{Roles.Tecnico}";
     private static readonly string[] ExtensionesFoto = { ".jpg", ".jpeg", ".png" };
     private const long MaxFotoBytes = 5 * 1024 * 1024; // 5 MB
 
@@ -47,7 +48,7 @@ public class VisitasController(AppDbContext db, IWebHostEnvironment env) : Contr
         return v == null ? NotFound(new { mensaje = "Visita no encontrada" }) : Ok(v);
     }
 
-    // POST api/visitas  (programar)
+    // POST api/visitas  (programar: el médico a pacientes de sus técnicos, el técnico a los suyos)
     [HttpPost]
     [Authorize(Roles = Programadores)]
     public async Task<ActionResult<VisitaResponse>> Programar(ProgramarVisitaRequest req)
@@ -76,9 +77,9 @@ public class VisitasController(AppDbContext db, IWebHostEnvironment env) : Contr
         return CreatedAtAction(nameof(Obtener), new { id = visita.Id }, resp);
     }
 
-    // PUT api/visitas/5/fecha  (reprogramar)
+    // PUT api/visitas/5/fecha  (reprogramar: solo el médico, para que un atraso no se esconda)
     [HttpPut("{id:int}/fecha")]
-    [Authorize(Roles = Programadores)]
+    [Authorize(Roles = Roles.Medico)]
     public async Task<IActionResult> Reprogramar(int id, ReprogramarVisitaRequest req)
     {
         var visita = await VisitasVisibles().FirstOrDefaultAsync(v => v.Id == id);
@@ -93,9 +94,9 @@ public class VisitasController(AppDbContext db, IWebHostEnvironment env) : Contr
         return NoContent();
     }
 
-    // PUT api/visitas/5/cancelar
+    // PUT api/visitas/5/cancelar  (solo el médico)
     [HttpPut("{id:int}/cancelar")]
-    [Authorize(Roles = Programadores)]
+    [Authorize(Roles = Roles.Medico)]
     public async Task<IActionResult> Cancelar(int id)
     {
         var visita = await VisitasVisibles().FirstOrDefaultAsync(v => v.Id == id);
@@ -115,7 +116,8 @@ public class VisitasController(AppDbContext db, IWebHostEnvironment env) : Contr
     [RequestSizeLimit(MaxFotoBytes + 1024 * 1024)]
     public async Task<ActionResult<VisitaResponse>> Registrar(int id, [FromForm] RegistrarVisitaRequest req)
     {
-        var visita = await db.Visitas.FirstOrDefaultAsync(v => v.Id == id && v.TecnicoId == UsuarioActualId);
+        var visita = await db.Visitas.Include(v => v.Paciente)
+            .FirstOrDefaultAsync(v => v.Id == id && v.TecnicoId == UsuarioActualId);
         if (visita == null) return NotFound(new { mensaje = "Visita no encontrada" });
 
         // Solo lectura una vez registrada
@@ -132,10 +134,16 @@ public class VisitasController(AppDbContext db, IWebHostEnvironment env) : Contr
         visita.AlturaCm = req.AlturaCm;
         visita.Temperatura = req.Temperatura;
         visita.Condicion = req.Condicion.Trim();
+        visita.Observaciones = string.IsNullOrWhiteSpace(req.Observaciones) ? null : req.Observaciones.Trim();
         visita.Latitud = req.Latitud;
         visita.Longitud = req.Longitud;
         visita.FechaRegistro = DateTime.UtcNow;
         visita.Estado = EstadoVisita.Realizada;
+
+        // La ubicación de la casa queda en el paciente para el mapa
+        visita.Paciente!.Latitud = req.Latitud;
+        visita.Paciente.Longitud = req.Longitud;
+
         await db.SaveChangesAsync();
 
         return Ok(await Proyectar(db.Visitas.Where(v => v.Id == id), DateTime.UtcNow).FirstAsync());
@@ -166,7 +174,8 @@ public class VisitasController(AppDbContext db, IWebHostEnvironment env) : Contr
         if (r.PesoKg <= 0 || r.PesoKg > 1000) return "El peso debe estar entre 0 y 1000 kg";
         if (r.AlturaCm <= 0 || r.AlturaCm > 300) return "La altura debe estar entre 0 y 300 cm";
         if (r.Temperatura < 30 || r.Temperatura > 45) return "La temperatura debe estar entre 30 y 45 °C";
-        if (string.IsNullOrWhiteSpace(r.Condicion)) return "La condición es obligatoria";
+        if (string.IsNullOrWhiteSpace(r.Condicion)) return "La condición corporal es obligatoria";
+        if (r.Observaciones?.Length > 1000) return "Las observaciones no pueden pasar de 1000 caracteres";
         if (r.Latitud is < -90 or > 90 || r.Longitud is < -180 or > 180) return "Ubicación inválida";
         if (r.Foto == null || r.Foto.Length == 0) return "La foto es obligatoria";
         if (r.Foto.Length > MaxFotoBytes) return "La foto no puede pesar más de 5 MB";
@@ -191,7 +200,7 @@ public class VisitasController(AppDbContext db, IWebHostEnvironment env) : Contr
         query.Select(v => new VisitaResponse(
             v.Id,
             v.PacienteId, v.Paciente!.Nombre,
-            v.Paciente.Raza!.Especie!.Nombre, v.Paciente.Duenio!.Nombre,
+            v.Paciente.Raza!.Especie!.Nombre, v.Paciente.Dueno!.Nombre,
             v.ServicioId, v.Servicio!.Nombre,
             v.TecnicoId,
             db.Users.Where(u => u.Id == v.TecnicoId).Select(u => u.NombreCompleto).FirstOrDefault(),
@@ -202,5 +211,6 @@ public class VisitasController(AppDbContext db, IWebHostEnvironment env) : Contr
             v.PesoKg, v.AlturaCm, v.Temperatura,
             v.Condicion,
             v.Latitud, v.Longitud,
-            v.FotoUrl));
+            v.FotoUrl,
+            v.Observaciones));
 }

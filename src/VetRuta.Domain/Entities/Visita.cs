@@ -17,6 +17,7 @@
         public decimal? AlturaCm { get; set; }
         public decimal? Temperatura { get; set; }
         public string? Condicion { get; set; }
+        public string? Observaciones { get; set; }
         public double? Latitud { get; set; }
         public double? Longitud { get; set; }
         public string? FotoUrl { get; set; }

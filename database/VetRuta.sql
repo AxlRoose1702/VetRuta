@@ -530,6 +530,47 @@ BEGIN
     VALUES (N'20261121182642_DuenosPacientesVisitas', N'9.0.23');
 END;
 
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261122004221_FotoObservacionesUbicacion'
+)
+BEGIN
+    ALTER TABLE [Visitas] ADD [Observaciones] nvarchar(1000) NULL;
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261122004221_FotoObservacionesUbicacion'
+)
+BEGIN
+    ALTER TABLE [Pacientes] ADD [FotoUrl] nvarchar(300) NULL;
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261122004221_FotoObservacionesUbicacion'
+)
+BEGIN
+    ALTER TABLE [Pacientes] ADD [Latitud] float NULL;
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261122004221_FotoObservacionesUbicacion'
+)
+BEGIN
+    ALTER TABLE [Pacientes] ADD [Longitud] float NULL;
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261122004221_FotoObservacionesUbicacion'
+)
+BEGIN
+    INSERT INTO [__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20261122004221_FotoObservacionesUbicacion', N'9.0.23');
+END;
+
 COMMIT;
 GO
 

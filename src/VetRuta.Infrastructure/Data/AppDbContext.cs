@@ -68,9 +68,10 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
         b.Entity<Paciente>(e =>
         {
             e.Property(x => x.Nombre).HasMaxLength(100).IsRequired();
+            e.Property(x => x.FotoUrl).HasMaxLength(300);
             e.HasOne(p => p.Raza).WithMany()
                 .HasForeignKey(p => p.RazaId).OnDelete(DeleteBehavior.Restrict);
-            e.HasOne(p => p.Duenio).WithMany(d => d.Pacientes)
+            e.HasOne(p => p.Dueno).WithMany(d => d.Pacientes)
                 .HasForeignKey(p => p.DuenoId).OnDelete(DeleteBehavior.Restrict);
             e.HasOne<ApplicationUser>().WithMany()
                 .HasForeignKey(p => p.TecnicoId).OnDelete(DeleteBehavior.Restrict);
@@ -82,6 +83,7 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
             e.Property(x => x.AlturaCm).HasPrecision(6, 2);
             e.Property(x => x.Temperatura).HasPrecision(4, 1);
             e.Property(x => x.Condicion).HasMaxLength(500);
+            e.Property(x => x.Observaciones).HasMaxLength(1000);
             e.Property(x => x.FotoUrl).HasMaxLength(300);
             e.HasOne(v => v.Paciente).WithMany(p => p.Visitas)
                 .HasForeignKey(v => v.PacienteId).OnDelete(DeleteBehavior.Restrict);

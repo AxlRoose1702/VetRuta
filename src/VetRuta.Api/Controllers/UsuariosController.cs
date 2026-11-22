@@ -82,13 +82,12 @@ public class UsuariosController(UserManager<ApplicationUser> userManager, AppDbC
     [Authorize(Roles = Roles.Root)]
     public async Task<ActionResult<UsuarioResponse>> Crear(CrearUsuarioRequest req)
     {
-        
+
         if (!Roles.Todos.Contains(req.Rol)) return BadRequest(new { mensaje = "Rol inválido" });
         if (await userManager.FindByEmailAsync(req.Email) != null)
             return Conflict(new { mensaje = "Ya existe un usuario con ese correo" });
-
-        var error = await ValidarZonaYMedicoAsync(req.ZonaId, req.MedicoId, req.Rol);
-        if (error != null) return BadRequest(new { mensaje = error });
+        if (req.ZonaId.HasValue && !await db.Zonas.AnyAsync(z => z.Id == req.ZonaId))
+            return BadRequest(new { mensaje = "La zona no existe" });
 
         var user = new ApplicationUser
         {
@@ -96,7 +95,6 @@ public class UsuariosController(UserManager<ApplicationUser> userManager, AppDbC
             Email = req.Email,
             NombreCompleto = req.NombreCompleto,
             ZonaId = req.ZonaId,
-            MedicoId = req.Rol == Roles.Tecnico ? req.MedicoId : null,
             Activo = true
         };
 
@@ -111,6 +109,7 @@ public class UsuariosController(UserManager<ApplicationUser> userManager, AppDbC
         }
 
         return CreatedAtAction(nameof(Obtener), new { id = user.Id }, await MapearAsync(user));
+
     }
 
     // PUT api/usuarios/{id}
@@ -150,7 +149,6 @@ public class UsuariosController(UserManager<ApplicationUser> userManager, AppDbC
     {
         var tecnico = await userManager.FindByIdAsync(id);
         if (tecnico == null) return NotFound(new { mensaje = "Técnico no encontrado" });
-        
         if (!await userManager.IsInRoleAsync(tecnico, Roles.Tecnico))
             return BadRequest(new { mensaje = "Solo se puede asignar médico a un técnico" });
 
@@ -160,7 +158,9 @@ public class UsuariosController(UserManager<ApplicationUser> userManager, AppDbC
         if (!medico.Activo) return BadRequest(new { mensaje = "El médico está desactivado" });
 
         tecnico.MedicoId = medico.Id; // un técnico pertenece a un solo médico
-        await userManager.UpdateAsync(tecnico);
+        var res = await userManager.UpdateAsync(tecnico);
+        if (!res.Succeeded) return BadRequest(new { errores = res.Errors.Select(e => e.Description) });
+
         return Ok(await MapearAsync(tecnico));
     }
 
@@ -171,8 +171,11 @@ public class UsuariosController(UserManager<ApplicationUser> userManager, AppDbC
     {
         var tecnico = await userManager.FindByIdAsync(id);
         if (tecnico == null) return NotFound(new { mensaje = "Técnico no encontrado" });
+
         tecnico.MedicoId = null;
-        await userManager.UpdateAsync(tecnico);
+        var res = await userManager.UpdateAsync(tecnico);
+        if (!res.Succeeded) return BadRequest(new { errores = res.Errors.Select(e => e.Description) });
+
         return Ok(await MapearAsync(tecnico));
     }
 
@@ -214,19 +217,19 @@ public class UsuariosController(UserManager<ApplicationUser> userManager, AppDbC
         return NoContent();
     }
 
-    private async Task<string?> ValidarZonaYMedicoAsync(int? zonaId, string? medicoId, string rol)
-    {
-        if (zonaId.HasValue && !await db.Zonas.AnyAsync(z => z.Id == zonaId))
-            return "La zona no existe";
+    //private async Task<string?> ValidarZonaYMedicoAsync(int? zonaId, string? medicoId, string rol)
+    //{
+    //    if (zonaId.HasValue && !await db.Zonas.AnyAsync(z => z.Id == zonaId))
+    //        return "La zona no existe";
 
-        if (rol == Roles.Tecnico && !string.IsNullOrEmpty(medicoId))
-        {
-            var medico = await userManager.FindByIdAsync(medicoId);
-            if (medico == null || !await userManager.IsInRoleAsync(medico, Roles.Medico))
-                return "El médico no existe";
-        }
-        return null;
-    }
+    //    if (rol == Roles.Tecnico && !string.IsNullOrEmpty(medicoId))
+    //    {
+    //        var medico = await userManager.FindByIdAsync(medicoId);
+    //        if (medico == null || !await userManager.IsInRoleAsync(medico, Roles.Medico))
+    //            return "El médico no existe";
+    //    }
+    //    return null;
+    //}
 
     private async Task<UsuarioResponse> MapearAsync(ApplicationUser u)
     {

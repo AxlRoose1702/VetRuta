@@ -10,7 +10,7 @@ namespace VetRuta.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize]
+[Authorize(Roles = $"{Roles.Director},{Roles.Medico},{Roles.Tecnico}")]
 public class TableroController(AppDbContext db) : ControllerBase
 {
     private string UsuarioActualId => User.FindFirstValue(ClaimTypes.NameIdentifier)!;

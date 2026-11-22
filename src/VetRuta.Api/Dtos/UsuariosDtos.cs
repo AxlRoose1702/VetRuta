@@ -6,8 +6,7 @@ public record CrearUsuarioRequest(
     string Password,
     string NombreCompleto,
     string Rol,
-    int? ZonaId,
-    string? MedicoId
+    int? ZonaId
     );
 
 public record EditarUsuarioRequest(

@@ -11,8 +11,11 @@ namespace VetRuta.Api.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
-public class PacientesController(AppDbContext db) : ControllerBase
+public class PacientesController(AppDbContext db, IWebHostEnvironment env) : ControllerBase
 {
+    private static readonly string[] ExtensionesFoto = { ".jpg", ".jpeg", ".png" };
+    private const long MaxFotoBytes = 5 * 1024 * 1024; // 5 MB
+
     private string UsuarioActualId => User.FindFirstValue(ClaimTypes.NameIdentifier)!;
 
     // GET api/pacientes?buscar=firulais&especieId=1&duenoId=3&tecnicoId=abc
@@ -52,7 +55,7 @@ public class PacientesController(AppDbContext db) : ControllerBase
             .Select(v => new VisitaResponse(
                 v.Id,
                 v.PacienteId, v.Paciente!.Nombre,
-                v.Paciente.Raza!.Especie!.Nombre, v.Paciente.Duenio!.Nombre,
+                v.Paciente.Raza!.Especie!.Nombre, v.Paciente.Dueno!.Nombre,
                 v.ServicioId, v.Servicio!.Nombre,
                 v.TecnicoId,
                 db.Users.Where(u => u.Id == v.TecnicoId).Select(u => u.NombreCompleto).FirstOrDefault(),
@@ -63,7 +66,8 @@ public class PacientesController(AppDbContext db) : ControllerBase
                 v.PesoKg, v.AlturaCm, v.Temperatura,
                 v.Condicion,
                 v.Latitud, v.Longitud,
-                v.FotoUrl))
+                v.FotoUrl,
+                v.Observaciones))
             .ToListAsync();
 
         var realizadas = visitas.Where(v => v.Estado == nameof(EstadoVisita.Realizada)).ToList();
@@ -76,8 +80,9 @@ public class PacientesController(AppDbContext db) : ControllerBase
             visitas));
     }
 
-    // POST api/pacientes
+    // POST api/pacientes  (solo el Médico crea pacientes y los asigna a uno de sus técnicos)
     [HttpPost]
+    [Authorize(Roles = Roles.Medico)]
     public async Task<ActionResult<PacienteResponse>> Crear(PacienteRequest req)
     {
         var (tecnicoId, error) = await ResolverTecnicoAsync(req.TecnicoId);
@@ -92,7 +97,9 @@ public class PacientesController(AppDbContext db) : ControllerBase
             FechaNacimiento = req.FechaNacimiento,
             RazaId = req.RazaId,
             DuenoId = req.DuenoId,
-            TecnicoId = tecnicoId
+            TecnicoId = tecnicoId,
+            Latitud = req.Latitud,
+            Longitud = req.Longitud
         };
         db.Pacientes.Add(paciente);
         await db.SaveChangesAsync();
@@ -115,13 +122,18 @@ public class PacientesController(AppDbContext db) : ControllerBase
         paciente.FechaNacimiento = req.FechaNacimiento;
         paciente.RazaId = req.RazaId;
         paciente.DuenoId = req.DuenoId;
+        if (req.Latitud.HasValue && req.Longitud.HasValue) // si no la mandan, se conserva la que tenía
+        {
+            paciente.Latitud = req.Latitud;
+            paciente.Longitud = req.Longitud;
+        }
         await db.SaveChangesAsync();
         return NoContent();
     }
 
-    // PUT api/pacientes/5/tecnico
+    // PUT api/pacientes/5/tecnico  (solo el Médico, entre sus técnicos)
     [HttpPut("{id:int}/tecnico")]
-    [Authorize(Roles = $"{Roles.Root},{Roles.Director},{Roles.Medico}")]
+    [Authorize(Roles = Roles.Medico)]
     public async Task<IActionResult> ReasignarTecnico(int id, ReasignarTecnicoRequest req)
     {
         var paciente = await PacientesVisibles().FirstOrDefaultAsync(p => p.Id == id);
@@ -133,6 +145,27 @@ public class PacientesController(AppDbContext db) : ControllerBase
         paciente.TecnicoId = tecnicoId;
         await db.SaveChangesAsync();
         return NoContent();
+    }
+
+    // POST api/pacientes/5/foto  (multipart/form-data)
+    [HttpPost("{id:int}/foto")]
+    [Authorize(Roles = $"{Roles.Medico},{Roles.Tecnico}")]
+    [Consumes("multipart/form-data")]
+    [RequestSizeLimit(MaxFotoBytes + 1024 * 1024)]
+    public async Task<ActionResult<PacienteResponse>> SubirFoto(int id, [FromForm] FotoPacienteRequest req)
+    {
+        var paciente = await PacientesVisibles().FirstOrDefaultAsync(p => p.Id == id);
+        if (paciente == null) return NotFound(new { mensaje = "Paciente no encontrado" });
+
+        if (req.Foto == null || req.Foto.Length == 0) return BadRequest(new { mensaje = "La foto es obligatoria" });
+        if (req.Foto.Length > MaxFotoBytes) return BadRequest(new { mensaje = "La foto no puede pesar más de 5 MB" });
+        if (!ExtensionesFoto.Contains(Path.GetExtension(req.Foto.FileName).ToLowerInvariant()))
+            return BadRequest(new { mensaje = "La foto debe ser JPG o PNG" });
+
+        paciente.FotoUrl = await GuardarFotoAsync(req.Foto, $"paciente-{paciente.Id}");
+        await db.SaveChangesAsync();
+
+        return Ok(await Proyectar(db.Pacientes.Where(p => p.Id == id)).FirstAsync());
     }
 
     // DELETE api/pacientes/5
@@ -169,12 +202,9 @@ public class PacientesController(AppDbContext db) : ControllerBase
         return query; // Root y Director ven todo
     }
 
-    // Decide qué técnico queda asignado según quién hace la petición
+    // Solo la usa el Médico: el técnico debe existir, estar activo y ser suyo
     private async Task<(string? tecnicoId, ActionResult? error)> ResolverTecnicoAsync(string? tecnicoPedido)
     {
-        if (User.IsInRole(Roles.Tecnico))
-            return (UsuarioActualId, null); // el técnico siempre se asigna a sí mismo
-
         if (string.IsNullOrWhiteSpace(tecnicoPedido))
             return (null, BadRequest(new { mensaje = "Debes indicar el técnico" }));
 
@@ -184,8 +214,7 @@ public class PacientesController(AppDbContext db) : ControllerBase
 
         if (tecnico == null) return (null, BadRequest(new { mensaje = "El técnico no existe" }));
         if (!tecnico.Activo) return (null, BadRequest(new { mensaje = "El técnico está desactivado" }));
-
-        if (User.IsInRole(Roles.Medico) && tecnico.MedicoId != UsuarioActualId)
+        if (tecnico.MedicoId != UsuarioActualId)
             return (null, BadRequest(new { mensaje = "Ese técnico no está asignado a ti" }));
 
         return (tecnico.Id, null);
@@ -195,9 +224,25 @@ public class PacientesController(AppDbContext db) : ControllerBase
     {
         if (string.IsNullOrWhiteSpace(req.Nombre)) return BadRequest(new { mensaje = "El nombre es obligatorio" });
         if (req.FechaNacimiento > DateTime.Today) return BadRequest(new { mensaje = "La fecha de nacimiento no puede ser futura" });
+        if (req.Latitud.HasValue != req.Longitud.HasValue)
+            return BadRequest(new { mensaje = "Manda la latitud y la longitud juntas" });
+        if (req.Latitud is < -90 or > 90 || req.Longitud is < -180 or > 180)
+            return BadRequest(new { mensaje = "Ubicación inválida" });
         if (!await db.Razas.AnyAsync(r => r.Id == req.RazaId)) return BadRequest(new { mensaje = "La raza no existe" });
         if (!await db.Dueños.AnyAsync(d => d.Id == req.DuenoId)) return BadRequest(new { mensaje = "El dueño no existe" });
         return null;
+    }
+
+    private async Task<string> GuardarFotoAsync(IFormFile foto, string prefijo)
+    {
+        var raiz = env.WebRootPath ?? Path.Combine(env.ContentRootPath, "wwwroot");
+        var carpeta = Path.Combine(raiz, "fotos");
+        Directory.CreateDirectory(carpeta);
+
+        var nombre = $"{prefijo}-{Guid.NewGuid():N}{Path.GetExtension(foto.FileName).ToLowerInvariant()}";
+        await using var stream = System.IO.File.Create(Path.Combine(carpeta, nombre));
+        await foto.CopyToAsync(stream);
+        return $"/fotos/{nombre}";
     }
 
     // Convierte a DTO dentro de la consulta SQL
@@ -211,8 +256,11 @@ public class PacientesController(AppDbContext db) : ControllerBase
             p.Raza.EspecieId,
             p.Raza.Especie!.Nombre,
             p.DuenoId,
-            p.Duenio!.Nombre,
-            p.Duenio.Telefono,
+            p.Dueno!.Nombre,
+            p.Dueno.Telefono,
             p.TecnicoId,
-            db.Users.Where(u => u.Id == p.TecnicoId).Select(u => u.NombreCompleto).FirstOrDefault()));
+            db.Users.Where(u => u.Id == p.TecnicoId).Select(u => u.NombreCompleto).FirstOrDefault(),
+            p.FotoUrl,
+            p.Latitud,
+            p.Longitud));
 }
