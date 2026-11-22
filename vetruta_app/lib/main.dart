@@ -1,4 +1,5 @@
-import 'package:material_ui/material_ui.dart';
+import 'package:flutter/material.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:provider/provider.dart';
 
 import 'core/api_client.dart';
@@ -7,8 +8,9 @@ import 'features/auth/auth_provider.dart';
 import 'features/auth/login_screen.dart';
 import 'features/home/home_screen.dart';
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await initializeDateFormatting('es'); // nombres de meses y días en español
   final api = ApiClient();
 
   runApp(

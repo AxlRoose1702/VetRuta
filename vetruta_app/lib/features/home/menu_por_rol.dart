@@ -1,6 +1,7 @@
-import 'package:material_ui/material_ui.dart';
+import 'package:flutter/material.dart';
 
 import '../../core/config.dart';
+import '../tecnico/calendario_screen.dart';
 import 'pantalla_pendiente.dart';
 
 /// Una opción del menú principal.
@@ -45,7 +46,7 @@ List<OpcionMenu> opcionesDelRol(String rol) {
     case Roles.tecnico:
       return [
         OpcionMenu('Calendario', 'Mis visitas por día y su estado', Icons.calendar_month,
-            (_) => const PantallaPendiente('Calendario')),
+            (_) => const CalendarioScreen()),
         OpcionMenu('Mapa', 'Dónde están mis pacientes', Icons.map,
             (_) => const PantallaPendiente('Mapa')),
         OpcionMenu('Mis pacientes', 'Pacientes asignados y próxima visita', Icons.pets,

@@ -1,4 +1,4 @@
-import 'package:material_ui/material_ui.dart';
+import 'package:flutter/material.dart';
 
 /// Pantalla temporal para las opciones que aún no están hechas.
 class PantallaPendiente extends StatelessWidget {
