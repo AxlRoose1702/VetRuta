@@ -209,11 +209,11 @@ Respuestas que vas a ver:
 
 ### Flujo de prueba sugerido
 
-1. Como **Root**: crea un Director, un Médico y dos Técnicos (`POST /api/usuarios`), uno con `medicoId` del médico.
-2. Como **Director**: asigna el otro técnico al médico (`PUT /api/usuarios/{id}/medico`).
-3. Como **Médico**: crea un dueño (`POST /api/duenos`) y un paciente asignado a su técnico (`POST /api/pacientes`), y prográmale una visita (`POST /api/visitas`).
-4. Como **Técnico**: ve sus visitas (`GET /api/visitas`) y registra una con foto (`POST /api/visitas/{id}/registro`, formulario multipart). Intenta registrarla otra vez: responde 409.
-5. Como cada rol: abre `GET /api/tablero` y `GET /api/pacientes/{id}/historial`, y revisa que cada uno vea solo lo suyo.
+1. Como **Root**: crea un Director, un Médico y dos Técnicos (`POST /api/usuarios`).
+2. Como **Director**: asigna los técnicos al médico (`PUT /api/usuarios/{id}/medico`).
+3. Como **Médico**: crea un dueño (`POST /api/duenos`), un paciente asignado a uno de sus técnicos (`POST /api/pacientes`), súbele foto (`POST /api/pacientes/{id}/foto`) y prográmale una visita (`POST /api/visitas`).
+4. Como **Técnico**: programa una visita a uno de sus pacientes, ve sus visitas (`GET /api/visitas`) y registra una con foto (`POST /api/visitas/{id}/registro`, formulario multipart). Intenta registrarla otra vez: responde 409.
+5. Como Director, Médico y Técnico: abre `GET /api/tablero` y `GET /api/pacientes/{id}/historial`, y revisa que cada uno vea solo lo suyo.
 
 ---
 
@@ -235,10 +235,10 @@ Respuestas que vas a ver:
 | `GET /api/usuarios?rol=&activo=` | Root, Director | Lista usuarios. El Director no ve a los Root |
 | `GET /api/usuarios/{id}` | Root, Director | Un usuario |
 | `GET /api/usuarios/medicos/{medicoId}/tecnicos` | Root, Director, Médico | Técnicos de un médico. Un médico solo puede pedir los suyos |
-| `POST /api/usuarios` | Root | Crea un usuario de cualquier rol |
+| `POST /api/usuarios` | Root | Crea un usuario de cualquier rol. El médico de un técnico lo asigna después el Director |
 | `PUT /api/usuarios/{id}` | Root | Edita correo, nombre y zona |
-| `PUT /api/usuarios/{id}/medico` | Root, Director | Asigna (o reasigna) un técnico a un médico |
-| `DELETE /api/usuarios/{id}/medico` | Root, Director | Quita el médico a un técnico |
+| `PUT /api/usuarios/{id}/medico` | Director | Asigna (o reasigna) un técnico a un médico |
+| `DELETE /api/usuarios/{id}/medico` | Director | Quita el médico a un técnico |
 | `PATCH /api/usuarios/{id}/activar` · `/desactivar` | Root | Activa o desactiva. No puedes cambiar tu propio estado |
 | `PUT /api/usuarios/{id}/password` | Root | Cambia la contraseña de un usuario |
 
@@ -267,12 +267,13 @@ Respuestas que vas a ver:
 
 | Método y ruta | Quién | Qué hace |
 |---|---|---|
-| `GET /api/pacientes?buscar=&especieId=&duenoId=&tecnicoId=` | Todos **(J)** | Lista con raza, especie, dueño y técnico |
+| `GET /api/pacientes?buscar=&especieId=&duenoId=&tecnicoId=` | Todos **(J)** | Lista con raza, especie, dueño, técnico, foto y ubicación (para el mapa) |
 | `GET /api/pacientes/{id}` | Todos **(J)** | Un paciente |
 | `GET /api/pacientes/{id}/historial` | Todos **(J)** | Todas sus visitas, de la más reciente a la más vieja, con totales |
-| `POST /api/pacientes` | Todos **(J)** | Crear. El técnico queda asignado a sí mismo; el médico debe elegir uno de sus técnicos |
+| `POST /api/pacientes` | Médico | Crear, asignándolo a uno de sus técnicos. Acepta latitud y longitud de la casa |
 | `PUT /api/pacientes/{id}` | Todos **(J)** | Editar datos (no cambia el técnico) |
-| `PUT /api/pacientes/{id}/tecnico` | Root, Director, Médico **(J)** | Reasignar a otro técnico |
+| `PUT /api/pacientes/{id}/tecnico` | Médico **(J)** | Reasignar a otro de sus técnicos |
+| `POST /api/pacientes/{id}/foto` | Médico, Técnico **(J)** | Subir o cambiar la foto de la mascota (multipart/form-data, campo `foto`) |
 | `DELETE /api/pacientes/{id}` | Root, Director | Solo si no tiene visitas |
 
 ### Visitas — `api/visitas`
@@ -281,22 +282,29 @@ Respuestas que vas a ver:
 |---|---|---|
 | `GET /api/visitas?desde=&hasta=&estado=&atrasadas=&tecnicoId=&pacienteId=` | Todos **(J)** | Calendario y actividades: pendientes, realizadas, canceladas y atrasadas |
 | `GET /api/visitas/{id}` | Todos **(J)** | Una visita |
-| `POST /api/visitas` | Root, Director, Médico **(J)** | Programar. El técnico se toma del paciente |
-| `PUT /api/visitas/{id}/fecha` | Root, Director, Médico **(J)** | Reprogramar, solo si sigue Programada |
-| `PUT /api/visitas/{id}/cancelar` | Root, Director, Médico **(J)** | Cancelar, solo si sigue Programada |
-| `POST /api/visitas/{id}/registro` | Técnico dueño de la visita | Registrar peso, altura, temperatura, condición, ubicación y foto (multipart/form-data). Después queda de solo lectura |
+| `POST /api/visitas` | Médico, Técnico **(J)** | Programar. El médico a pacientes de sus técnicos, el técnico solo a los suyos. El técnico de la visita se toma del paciente |
+| `PUT /api/visitas/{id}/fecha` | Médico **(J)** | Reprogramar, solo si sigue Programada |
+| `PUT /api/visitas/{id}/cancelar` | Médico **(J)** | Cancelar, solo si sigue Programada |
+| `POST /api/visitas/{id}/registro` | Técnico dueño de la visita | Registrar peso, altura, temperatura, condición corporal, observaciones, ubicación y foto (multipart/form-data). Después queda de solo lectura. La ubicación se guarda también en el paciente |
 
 ### Tablero — `api/tablero`
 
 | Método y ruta | Quién | Qué hace |
 |---|---|---|
-| `GET /api/tablero?desde=&hasta=` | Todos **(J)** | Realizadas contra programadas, cumplimiento por técnico y pacientes por especie. Por defecto, el mes actual |
+| `GET /api/tablero?desde=&hasta=` | Director, Médico, Técnico **(J)** | Realizadas contra programadas, cumplimiento por técnico y pacientes por especie. Por defecto, el mes actual |
 
 ---
 
 ## Reglas de negocio y decisiones de diseño
 
 El enunciado deja algunos puntos abiertos. Estas son las decisiones tomadas:
+
+- **Permisos según la tabla del enunciado.** Root crea y desactiva usuarios; el Director asigna técnicos a médicos; el Médico crea pacientes, los asigna a sus técnicos y programa visitas; el Técnico programa visitas a sus propios pacientes y las registra; Director, Médico y Técnico ven el tablero.
+- **Solo el Médico reprograma o cancela visitas.** El técnico puede programar, pero no mover ni cancelar, para que una visita atrasada no se pueda esconder.
+- **Root como administrador** puede consultar pacientes y visitas (lectura) y borrar registros sin historial, para soporte. No crea pacientes, no programa ni registra visitas.
+- **Ubicación del paciente.** El paciente guarda latitud y longitud de la casa. Se puede dar al crearlo, y cada vez que el técnico registra una visita se actualiza con el GPS del registro. De ahí salen los marcadores del mapa.
+- **Foto de la mascota.** Es la foto de perfil del paciente y se puede cambiar. Las fotos de las visitas, en cambio, son históricas y no se modifican.
+- **Condición corporal y observaciones** son campos separados en el registro de la visita: la condición es obligatoria y las observaciones son opcionales (máximo 1000 caracteres).
 
 - **Identity + JWT propio.** Se usa ASP.NET Core Identity para guardar usuarios, contraseñas (con hash) y roles, y un endpoint de login propio que emite un JWT con el id, el nombre y el rol. No se usa `MapIdentityApi` porque no incluye los roles en el token.
 - **Jerarquía en la misma tabla de usuarios.** El técnico tiene `MedicoId` (una relación de la tabla consigo misma). Como es un solo campo, un técnico pertenece a **un solo médico a la vez**; reasignarlo reemplaza el anterior. El médico puede tener técnicos en varias zonas porque la zona es del técnico, no del médico.
@@ -315,7 +323,8 @@ El enunciado deja algunos puntos abiertos. Estas son las decisiones tomadas:
 
 ## Fotos
 
-- Se suben en `POST /api/visitas/{id}/registro` como `multipart/form-data`, campo `foto`.
+- **Visita:** se suben en `POST /api/visitas/{id}/registro` como `multipart/form-data`, campo `foto`.
+- **Mascota:** se suben en `POST /api/pacientes/{id}/foto`, campo `foto`, con nombre `paciente-{id}-{guid}.jpg`.
 - Solo JPG o PNG, máximo 5 MB.
 - Se guardan en `src/VetRuta.Api/wwwroot/fotos/` con un nombre único (`visita-{id}-{guid}.jpg`). En la base solo queda la ruta, por ejemplo `/fotos/visita-3-ab12....jpg`.
 - Se ven en el navegador en `https://localhost:7262/fotos/...` gracias a `app.UseStaticFiles()`.
