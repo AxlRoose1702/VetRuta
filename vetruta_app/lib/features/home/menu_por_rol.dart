@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 
 import '../../core/config.dart';
 import '../tecnico/calendario_screen.dart';
+import '../tecnico/mapa_screen.dart';
+import '../tecnico/mis_pacientes_screen.dart';
+import '../visitas/programar_visita_screen.dart';
 import 'pantalla_pendiente.dart';
 
 /// Una opción del menú principal.
@@ -37,7 +40,7 @@ List<OpcionMenu> opcionesDelRol(String rol) {
         OpcionMenu('Pacientes', 'Crear, asignar técnico e historial', Icons.pets,
             (_) => const PantallaPendiente('Pacientes')),
         OpcionMenu('Programar visita', 'Agendar una visita con un servicio', Icons.event_available,
-            (_) => const PantallaPendiente('Programar visita')),
+            (_) => const ProgramarVisitaScreen()),
         OpcionMenu('Actividades de mis técnicos', 'Visitas hechas, pendientes y atrasadas',
             Icons.list_alt, (_) => const PantallaPendiente('Actividades de mis técnicos')),
         OpcionMenu('Tablero', 'Gráficas de mis técnicos', Icons.bar_chart,
@@ -48,11 +51,11 @@ List<OpcionMenu> opcionesDelRol(String rol) {
         OpcionMenu('Calendario', 'Mis visitas por día y su estado', Icons.calendar_month,
             (_) => const CalendarioScreen()),
         OpcionMenu('Mapa', 'Dónde están mis pacientes', Icons.map,
-            (_) => const PantallaPendiente('Mapa')),
+            (_) => const MapaScreen()),
         OpcionMenu('Mis pacientes', 'Pacientes asignados y próxima visita', Icons.pets,
-            (_) => const PantallaPendiente('Mis pacientes')),
+            (_) => const MisPacientesScreen()),
         OpcionMenu('Programar visita', 'Agendar una visita a uno de mis pacientes',
-            Icons.event_available, (_) => const PantallaPendiente('Programar visita')),
+            Icons.event_available, (_) => const ProgramarVisitaScreen()),
         OpcionMenu('Tablero', 'Mis gráficas', Icons.bar_chart,
             (_) => const PantallaPendiente('Tablero')),
       ];

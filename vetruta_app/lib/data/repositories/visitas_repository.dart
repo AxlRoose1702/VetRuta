@@ -52,6 +52,20 @@ class VisitasRepository {
     return (r.data as List).map((e) => Visita.fromJson(Map<String, dynamic>.from(e as Map))).toList();
   }
 
+  /// POST /api/visitas. La fecha se manda en UTC (termina en "Z").
+  Future<Visita> programar({
+    required int pacienteId,
+    required int servicioId,
+    required DateTime fechaProgramada,
+  }) async {
+    final r = await _api.dio.post('/api/visitas', data: {
+      'pacienteId': pacienteId,
+      'servicioId': servicioId,
+      'fechaProgramada': fechaProgramada.toUtc().toIso8601String(),
+    });
+    return Visita.fromJson(Map<String, dynamic>.from(r.data as Map));
+  }
+
   /// GET /api/visitas/{id}
   Future<Visita> obtener(int id) async {
     final r = await _api.dio.get('/api/visitas/$id');
