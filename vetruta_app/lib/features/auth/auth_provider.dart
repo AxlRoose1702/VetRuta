@@ -55,10 +55,7 @@ class AuthProvider extends ChangeNotifier {
 
   /// POST /api/auth/login. Si falla, lanza el error para que la pantalla lo muestre.
   Future<void> login(String email, String password) async {
-    final respuesta = await _api.dio.post(
-      '/api/auth/login',
-      data: {'email': email.trim(), 'password': password},
-    );
+    final respuesta = await _api.dio.post('/api/auth/login', data: {'email': email.trim(), 'password': password});
     final s = Sesion.fromJson(Map<String, dynamic>.from(respuesta.data as Map));
     _api.token = s.token;
     await _storage.write(key: _clave, value: jsonEncode(s.toJson()));

@@ -15,20 +15,20 @@ class Sesion {
   });
 
   factory Sesion.fromJson(Map<String, dynamic> json) => Sesion(
-        token: json['token'] as String,
-        expira: DateTime.parse(json['expira'] as String),
-        usuarioId: json['usuarioId'].toString(),
-        nombre: json['nombre'] as String,
-        rol: json['rol'] as String,
-      );
+    token: json['token'] as String,
+    expira: DateTime.parse(json['expira'] as String),
+    usuarioId: json['usuarioId'].toString(),
+    nombre: json['nombre'] as String,
+    rol: json['rol'] as String,
+  );
 
   Map<String, dynamic> toJson() => {
-        'token': token,
-        'expira': expira.toIso8601String(),
-        'usuarioId': usuarioId,
-        'nombre': nombre,
-        'rol': rol,
-      };
+    'token': token,
+    'expira': expira.toIso8601String(),
+    'usuarioId': usuarioId,
+    'nombre': nombre,
+    'rol': rol,
+  };
 
   bool get vencida => DateTime.now().isAfter(expira);
 }

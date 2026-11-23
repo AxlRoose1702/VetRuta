@@ -7,24 +7,28 @@ import 'config.dart';
 /// - Si la API responde 401 con sesión abierta, avisa para cerrar la sesión.
 class ApiClient {
   ApiClient()
-      : dio = Dio(BaseOptions(
+    : dio = Dio(
+        BaseOptions(
           baseUrl: AppConfig.apiUrl,
           connectTimeout: const Duration(seconds: 10),
           receiveTimeout: const Duration(seconds: 30),
-        )) {
-    dio.interceptors.add(InterceptorsWrapper(
-      onRequest: (options, handler) {
-        final t = token;
-        if (t != null) options.headers['Authorization'] = 'Bearer $t';
-        handler.next(options);
-      },
-      onError: (error, handler) {
-        if (error.response?.statusCode == 401 && token != null) {
-          onNoAutorizado?.call();
-        }
-        handler.next(error);
-      },
-    ));
+        ),
+      ) {
+    dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (options, handler) {
+          final t = token;
+          if (t != null) options.headers['Authorization'] = 'Bearer $t';
+          handler.next(options);
+        },
+        onError: (error, handler) {
+          if (error.response?.statusCode == 401 && token != null) {
+            onNoAutorizado?.call();
+          }
+          handler.next(error);
+        },
+      ),
+    );
   }
 
   final Dio dio;
@@ -39,8 +43,7 @@ class ApiClient {
   /// La API manda los errores como { "mensaje": "..." }.
   static String mensajeDeError(Object error, {String? en401}) {
     if (error is DioException) {
-      if (error.type == DioExceptionType.connectionError ||
-          error.type == DioExceptionType.connectionTimeout) {
+      if (error.type == DioExceptionType.connectionError || error.type == DioExceptionType.connectionTimeout) {
         return 'No se pudo conectar con la API (${AppConfig.apiUrl}). '
             'Revisa que esté corriendo con el perfil http.';
       }
@@ -50,10 +53,7 @@ class ApiClient {
         if (data['mensaje'] != null) return data['mensaje'].toString();
         if (data['errores'] is List) return (data['errores'] as List).join('\n');
         if (data['errors'] is Map) {
-          return (data['errors'] as Map)
-              .values
-              .expand((v) => v is List ? v : [v])
-              .join('\n');
+          return (data['errors'] as Map).values.expand((v) => v is List ? v : [v]).join('\n');
         }
       }
       switch (status) {

@@ -32,11 +32,10 @@ class CatalogosRepository {
   }
 
   Future<Dueno> crearDueno({required String nombre, String? telefono, String? direccion}) async {
-    final r = await _api.dio.post('/api/duenos', data: {
-      'nombre': nombre,
-      'telefono': telefono,
-      'direccion': direccion,
-    });
+    final r = await _api.dio.post(
+      '/api/duenos',
+      data: {'nombre': nombre, 'telefono': telefono, 'direccion': direccion},
+    );
     return Dueno.fromJson(Map<String, dynamic>.from(r.data as Map));
   }
 }

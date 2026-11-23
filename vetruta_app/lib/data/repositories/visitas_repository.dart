@@ -41,14 +41,17 @@ class VisitasRepository {
     String? tecnicoId,
     int? pacienteId,
   }) async {
-    final r = await _api.dio.get('/api/visitas', queryParameters: {
-      if (desde != null) 'desde': Fechas.soloFecha(desde),
-      if (hasta != null) 'hasta': Fechas.soloFecha(hasta),
-      'estado': ?estado,
-      'atrasadas': ?atrasadas,
-      'tecnicoId': ?tecnicoId,
-      'pacienteId': ?pacienteId,
-    });
+    final r = await _api.dio.get(
+      '/api/visitas',
+      queryParameters: {
+        if (desde != null) 'desde': Fechas.soloFecha(desde),
+        if (hasta != null) 'hasta': Fechas.soloFecha(hasta),
+        'estado': ?estado,
+        'atrasadas': ?atrasadas,
+        'tecnicoId': ?tecnicoId,
+        'pacienteId': ?pacienteId,
+      },
+    );
     return (r.data as List).map((e) => Visita.fromJson(Map<String, dynamic>.from(e as Map))).toList();
   }
 
@@ -58,11 +61,14 @@ class VisitasRepository {
     required int servicioId,
     required DateTime fechaProgramada,
   }) async {
-    final r = await _api.dio.post('/api/visitas', data: {
-      'pacienteId': pacienteId,
-      'servicioId': servicioId,
-      'fechaProgramada': fechaProgramada.toUtc().toIso8601String(),
-    });
+    final r = await _api.dio.post(
+      '/api/visitas',
+      data: {
+        'pacienteId': pacienteId,
+        'servicioId': servicioId,
+        'fechaProgramada': fechaProgramada.toUtc().toIso8601String(),
+      },
+    );
     return Visita.fromJson(Map<String, dynamic>.from(r.data as Map));
   }
 

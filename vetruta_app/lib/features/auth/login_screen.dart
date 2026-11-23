@@ -37,10 +37,12 @@ class _LoginScreenState extends State<LoginScreen> {
       await context.read<AuthProvider>().login(_email.text, _password.text);
     } catch (e) {
       if (!mounted) return;
-      setState(() => _error = ApiClient.mensajeDeError(
-            e,
-            en401: 'Correo o contraseña incorrectos, o el usuario está desactivado.',
-          ));
+      setState(
+        () => _error = ApiClient.mensajeDeError(
+          e,
+          en401: 'Correo o contraseña incorrectos, o el usuario está desactivado.',
+        ),
+      );
     } finally {
       if (mounted) setState(() => _cargando = false);
     }
@@ -65,11 +67,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   children: [
                     Icon(Icons.pets, size: 72, color: colores.primary),
                     const SizedBox(height: 8),
-                    Text(
-                      'VetRuta',
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.headlineMedium,
-                    ),
+                    Text('VetRuta', textAlign: TextAlign.center, style: Theme.of(context).textTheme.headlineMedium),
                     const Text('Atención veterinaria a domicilio', textAlign: TextAlign.center),
                     const SizedBox(height: 32),
                     if (aviso != null) ...[
@@ -122,8 +120,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: Padding(
                         padding: const EdgeInsets.symmetric(vertical: 12),
                         child: _cargando
-                            ? const SizedBox(
-                                height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                            ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
                             : const Text('Ingresar'),
                       ),
                     ),

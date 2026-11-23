@@ -41,22 +41,22 @@ class Paciente {
   });
 
   factory Paciente.fromJson(Map<String, dynamic> j) => Paciente(
-        id: j['id'] as int,
-        nombre: j['nombre'] as String,
-        fechaNacimiento: j['fechaNacimiento'] == null ? null : DateTime.parse(j['fechaNacimiento'] as String),
-        razaId: j['razaId'] as int,
-        razaNombre: j['razaNombre'] as String,
-        especieId: j['especieId'] as int,
-        especieNombre: j['especieNombre'] as String,
-        duenoId: j['duenoId'] as int,
-        duenoNombre: j['duenoNombre'] as String,
-        duenoTelefono: j['duenoTelefono'] as String?,
-        tecnicoId: j['tecnicoId'] as String?,
-        tecnicoNombre: j['tecnicoNombre'] as String?,
-        fotoUrl: j['fotoUrl'] as String?,
-        latitud: (j['latitud'] as num?)?.toDouble(),
-        longitud: (j['longitud'] as num?)?.toDouble(),
-      );
+    id: j['id'] as int,
+    nombre: j['nombre'] as String,
+    fechaNacimiento: j['fechaNacimiento'] == null ? null : DateTime.parse(j['fechaNacimiento'] as String),
+    razaId: j['razaId'] as int,
+    razaNombre: j['razaNombre'] as String,
+    especieId: j['especieId'] as int,
+    especieNombre: j['especieNombre'] as String,
+    duenoId: j['duenoId'] as int,
+    duenoNombre: j['duenoNombre'] as String,
+    duenoTelefono: j['duenoTelefono'] as String?,
+    tecnicoId: j['tecnicoId'] as String?,
+    tecnicoNombre: j['tecnicoNombre'] as String?,
+    fotoUrl: j['fotoUrl'] as String?,
+    latitud: (j['latitud'] as num?)?.toDouble(),
+    longitud: (j['longitud'] as num?)?.toDouble(),
+  );
 
   bool get tieneUbicacion => latitud != null && longitud != null;
 
@@ -80,7 +80,7 @@ enum EstadoPaciente {
 /// Un paciente con sus visitas, para saber su estado y su próxima visita.
 class PacienteConVisitas {
   PacienteConVisitas(this.paciente, List<Visita> visitas)
-      : visitas = [...visitas]..sort((a, b) => a.fechaProgramada.compareTo(b.fechaProgramada));
+    : visitas = [...visitas]..sort((a, b) => a.fechaProgramada.compareTo(b.fechaProgramada));
 
   final Paciente paciente;
   final List<Visita> visitas;

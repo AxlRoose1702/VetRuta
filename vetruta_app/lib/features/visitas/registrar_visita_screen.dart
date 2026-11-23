@@ -83,10 +83,7 @@ class _RegistrarVisitaScreenState extends State<RegistrarVisitaScreen> {
       Position? pos;
       try {
         pos = await Geolocator.getCurrentPosition(
-          locationSettings: const LocationSettings(
-            accuracy: LocationAccuracy.high,
-            timeLimit: Duration(seconds: 15),
-          ),
+          locationSettings: const LocationSettings(accuracy: LocationAccuracy.high, timeLimit: Duration(seconds: 15)),
         );
       } catch (_) {
         pos = await Geolocator.getLastKnownPosition();
@@ -229,11 +226,13 @@ class _RegistrarVisitaScreenState extends State<RegistrarVisitaScreen> {
               child: ListTile(
                 leading: const Icon(Icons.location_on),
                 title: const Text('Ubicación de la casa'),
-                subtitle: Text(_buscandoUbicacion
-                    ? 'Buscando ubicación...'
-                    : _ubicacion != null
-                        ? '${_ubicacion!.latitude.toStringAsFixed(6)}, ${_ubicacion!.longitude.toStringAsFixed(6)}'
-                        : (_errorUbicacion ?? 'Sin ubicación')),
+                subtitle: Text(
+                  _buscandoUbicacion
+                      ? 'Buscando ubicación...'
+                      : _ubicacion != null
+                      ? '${_ubicacion!.latitude.toStringAsFixed(6)}, ${_ubicacion!.longitude.toStringAsFixed(6)}'
+                      : (_errorUbicacion ?? 'Sin ubicación'),
+                ),
                 trailing: IconButton(
                   icon: const Icon(Icons.my_location),
                   tooltip: 'Obtener ubicación',
@@ -252,23 +251,25 @@ class _RegistrarVisitaScreenState extends State<RegistrarVisitaScreen> {
                 child: Image.file(File(_foto!.path), height: 220, fit: BoxFit.cover),
               ),
             const SizedBox(height: 8),
-            Row(children: [
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: () => _elegirFoto(ImageSource.camera),
-                  icon: const Icon(Icons.photo_camera),
-                  label: const Text('Cámara'),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () => _elegirFoto(ImageSource.camera),
+                    icon: const Icon(Icons.photo_camera),
+                    label: const Text('Cámara'),
+                  ),
                 ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: () => _elegirFoto(ImageSource.gallery),
-                  icon: const Icon(Icons.photo_library),
-                  label: const Text('Galería'),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () => _elegirFoto(ImageSource.gallery),
+                    icon: const Icon(Icons.photo_library),
+                    label: const Text('Galería'),
+                  ),
                 ),
-              ),
-            ]),
+              ],
+            ),
             const SizedBox(height: 24),
             FilledButton(
               onPressed: _guardando ? null : _guardar,

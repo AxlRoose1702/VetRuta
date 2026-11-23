@@ -28,10 +28,7 @@ class _CalendarioVista extends StatelessWidget {
 
   Future<void> _abrirVisita(BuildContext context, Visita v) async {
     final cal = context.read<CalendarioProvider>();
-    await Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => DetalleVisitaScreen(visitaId: v.id)),
-    );
+    await Navigator.push(context, MaterialPageRoute(builder: (_) => DetalleVisitaScreen(visitaId: v.id)));
     // Al regresar se recarga, por si se registró la visita.
     cal.recargar();
   }
@@ -44,9 +41,7 @@ class _CalendarioVista extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Calendario de visitas'),
-        actions: [
-          IconButton(icon: const Icon(Icons.refresh), tooltip: 'Recargar', onPressed: cal.recargar),
-        ],
+        actions: [IconButton(icon: const Icon(Icons.refresh), tooltip: 'Recargar', onPressed: cal.recargar)],
       ),
       body: Column(
         children: [
@@ -84,10 +79,7 @@ class _CalendarioVista extends StatelessWidget {
               },
             ),
           ),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-            child: LeyendaEstados(),
-          ),
+          const Padding(padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4), child: LeyendaEstados()),
           if (cal.cargando) const LinearProgressIndicator(),
           if (cal.error != null)
             Padding(
@@ -115,7 +107,9 @@ class _CalendarioVista extends StatelessWidget {
                           child: Icon(Icons.pets, color: v.estado.color),
                         ),
                         title: Text('${v.pacienteNombre} (${v.especieNombre})'),
-                        subtitle: Text('${Fechas.hora(v.fechaProgramada)} · ${v.servicioNombre}\nDueño: ${v.duenoNombre}'),
+                        subtitle: Text(
+                          '${Fechas.hora(v.fechaProgramada)} · ${v.servicioNombre}\nDueño: ${v.duenoNombre}',
+                        ),
                         isThreeLine: true,
                         trailing: EstadoChip(v.estado),
                         onTap: () => _abrirVisita(context, v),

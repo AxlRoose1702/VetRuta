@@ -9,25 +9,85 @@ import 'package:vetruta_app/features/auth/auth_provider.dart';
 import 'package:vetruta_app/features/tecnico/mis_pacientes_screen.dart';
 import 'package:vetruta_app/features/visitas/programar_visita_screen.dart';
 
-final paciente = {'id':1,'nombre':'Firulais','fechaNacimiento':'2022-01-01T00:00:00','razaId':1,'razaNombre':'Labrador','especieId':1,'especieNombre':'Perro','duenoId':1,'duenoNombre':'Juan','duenoTelefono':'5555','tecnicoId':'abc','tecnicoNombre':'T','fotoUrl':null,'latitud':null,'longitud':null};
-final paciente2 = {...paciente, 'id':2, 'nombre':'Michi'};
-final visita = {'id':1,'pacienteId':1,'pacienteNombre':'Firulais','especieNombre':'Perro','duenoNombre':'Juan','servicioId':1,'servicioNombre':'Vacunación','tecnicoId':'abc','tecnicoNombre':'T','fechaProgramada':'2026-11-20T10:00:00','estado':'Programada','atrasada':true,'fechaRegistro':null,'pesoKg':null,'alturaCm':null,'temperatura':null,'condicion':null,'latitud':null,'longitud':null,'fotoUrl':null,'observaciones':null};
+final paciente = {
+  'id': 1,
+  'nombre': 'Firulais',
+  'fechaNacimiento': '2022-01-01T00:00:00',
+  'razaId': 1,
+  'razaNombre': 'Labrador',
+  'especieId': 1,
+  'especieNombre': 'Perro',
+  'duenoId': 1,
+  'duenoNombre': 'Juan',
+  'duenoTelefono': '5555',
+  'tecnicoId': 'abc',
+  'tecnicoNombre': 'T',
+  'fotoUrl': null,
+  'latitud': null,
+  'longitud': null,
+};
+final paciente2 = {...paciente, 'id': 2, 'nombre': 'Michi'};
+final visita = {
+  'id': 1,
+  'pacienteId': 1,
+  'pacienteNombre': 'Firulais',
+  'especieNombre': 'Perro',
+  'duenoNombre': 'Juan',
+  'servicioId': 1,
+  'servicioNombre': 'Vacunación',
+  'tecnicoId': 'abc',
+  'tecnicoNombre': 'T',
+  'fechaProgramada': '2026-11-20T10:00:00',
+  'estado': 'Programada',
+  'atrasada': true,
+  'fechaRegistro': null,
+  'pesoKg': null,
+  'alturaCm': null,
+  'temperatura': null,
+  'condicion': null,
+  'latitud': null,
+  'longitud': null,
+  'fotoUrl': null,
+  'observaciones': null,
+};
 
 ApiClient fake() {
   final api = ApiClient();
-  api.dio.interceptors.insert(0, InterceptorsWrapper(onRequest: (o, h) {
-    dynamic data;
-    if (o.path == '/api/pacientes') data = [paciente, paciente2];
-    if (o.path == '/api/visitas') data = [visita];
-    if (o.path == '/api/servicios') data = [{'id':1,'nombre':'Vacunación','precio':150.0,'duracionMinutos':30}];
-    h.resolve(Response(requestOptions: o, statusCode: 200, data: data));
-  }));
+  api.dio.interceptors.insert(
+    0,
+    InterceptorsWrapper(
+      onRequest: (o, h) {
+        dynamic data;
+        if (o.path == '/api/pacientes') data = [paciente, paciente2];
+        if (o.path == '/api/visitas') data = [visita];
+        if (o.path == '/api/servicios') {
+          data = [
+            {'id': 1, 'nombre': 'Vacunación', 'precio': 150.0, 'duracionMinutos': 30},
+          ];
+        }
+        h.resolve(Response(requestOptions: o, statusCode: 200, data: data));
+      },
+    ),
+  );
   return api;
 }
 
 Widget app(ApiClient api, Widget home) => MultiProvider(
-  providers: [Provider<ApiClient>.value(value: api), ChangeNotifierProvider(create: (_) => AuthProvider(api))],
-  child: MaterialApp(locale: const Locale('es'), supportedLocales: const [Locale('es')], localizationsDelegates: const [GlobalMaterialLocalizations.delegate, GlobalWidgetsLocalizations.delegate, GlobalCupertinoLocalizations.delegate], home: home));
+  providers: [
+    Provider<ApiClient>.value(value: api),
+    ChangeNotifierProvider(create: (_) => AuthProvider(api)),
+  ],
+  child: MaterialApp(
+    locale: const Locale('es'),
+    supportedLocales: const [Locale('es')],
+    localizationsDelegates: const [
+      GlobalMaterialLocalizations.delegate,
+      GlobalWidgetsLocalizations.delegate,
+      GlobalCupertinoLocalizations.delegate,
+    ],
+    home: home,
+  ),
+);
 
 void main() {
   setUpAll(() => initializeDateFormatting('es'));

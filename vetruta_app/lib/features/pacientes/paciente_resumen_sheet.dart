@@ -44,11 +44,16 @@ class _ResumenPaciente extends StatelessWidget {
               title: Text(p.nombre, style: Theme.of(context).textTheme.titleLarge),
               subtitle: Text('${p.especieNombre} · ${p.razaNombre}'),
             ),
-            Row(children: [
-              Icon(Icons.circle, size: 12, color: item.estado.color),
-              const SizedBox(width: 6),
-              Text(item.estado.etiqueta, style: TextStyle(color: item.estado.color, fontWeight: FontWeight.bold)),
-            ]),
+            Row(
+              children: [
+                Icon(Icons.circle, size: 12, color: item.estado.color),
+                const SizedBox(width: 6),
+                Text(
+                  item.estado.etiqueta,
+                  style: TextStyle(color: item.estado.color, fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
             const SizedBox(height: 8),
             Text('Dueño: ${p.duenoNombre}'),
             Text('Teléfono: ${p.duenoTelefono ?? '-'}'),

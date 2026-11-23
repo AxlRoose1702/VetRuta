@@ -183,115 +183,119 @@ class _CrearPacienteScreenState extends State<CrearPacienteScreen> {
       body: _cargando
           ? const Center(child: CircularProgressIndicator())
           : _error != null
-              ? Center(child: Padding(padding: const EdgeInsets.all(24), child: Text(_error!)))
-              : Form(
-                  key: _formKey,
-                  child: ListView(
-                    padding: const EdgeInsets.all(16),
-                    children: [
-                      Text('Dueño', style: Theme.of(context).textTheme.titleMedium),
-                      Card(
-                        child: ListTile(
-                          leading: const Icon(Icons.person),
-                          title: Text(_dueno?.nombre ?? 'Toca para buscar o crear el dueño'),
-                          subtitle: _dueno == null
-                              ? null
-                              : Text('Tel: ${_dueno!.telefono ?? '-'}\n${_dueno!.direccion ?? ''}'),
-                          trailing: const Icon(Icons.search),
-                          onTap: _elegirDueno,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      Text('Mascota', style: Theme.of(context).textTheme.titleMedium),
-                      const SizedBox(height: 8),
-                      TextFormField(
-                        controller: _nombre,
-                        decoration: InputDecoration(labelText: 'Nombre', border: borde),
-                        validator: (v) => (v == null || v.trim().isEmpty) ? 'Escribe el nombre' : null,
-                      ),
-                      const SizedBox(height: 12),
-                      DropdownButtonFormField<int>(
-                        initialValue: _especieId,
-                        decoration: InputDecoration(labelText: 'Especie', border: borde),
-                        items: [for (final e in _especies) DropdownMenuItem(value: e.id, child: Text(e.nombre))],
-                        onChanged: _elegirEspecie,
-                        validator: (v) => v == null ? 'Elige la especie' : null,
-                      ),
-                      const SizedBox(height: 12),
-                      DropdownButtonFormField<int>(
-                        key: ValueKey(_especieId), // se reinicia al cambiar de especie
-                        initialValue: _razaId,
-                        decoration: InputDecoration(labelText: 'Raza', border: borde),
-                        items: [for (final r in _razas) DropdownMenuItem(value: r.id, child: Text(r.nombre))],
-                        onChanged: (v) => setState(() => _razaId = v),
-                        validator: (v) => v == null ? 'Elige la raza' : null,
-                      ),
-                      const SizedBox(height: 12),
-                      Card(
-                        child: ListTile(
-                          leading: const Icon(Icons.cake),
-                          title: const Text('Fecha de nacimiento aproximada'),
-                          subtitle: Text(_nacimiento == null ? 'Opcional' : Fechas.soloFecha(_nacimiento!)),
-                          onTap: _elegirNacimiento,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      DropdownButtonFormField<String>(
-                        initialValue: _tecnicoId,
-                        isExpanded: true,
-                        decoration: InputDecoration(labelText: 'Técnico asignado', border: borde),
-                        items: [
-                          for (final t in _tecnicos)
-                            DropdownMenuItem(
-                              value: t.id,
-                              child: Text('${t.nombre}${t.zonaNombre != null ? ' · ${t.zonaNombre}' : ''}'),
-                            ),
-                        ],
-                        onChanged: (v) => setState(() => _tecnicoId = v),
-                        validator: (v) => v == null ? 'Elige el técnico' : null,
-                      ),
-                      if (_tecnicos.isEmpty)
-                        const Padding(
-                          padding: EdgeInsets.only(top: 4),
-                          child: Text('No tienes técnicos. El Director debe asignártelos.'),
-                        ),
-                      const SizedBox(height: 12),
-                      Card(
-                        child: ListTile(
-                          leading: const Icon(Icons.location_on),
-                          title: const Text('Ubicación de la casa (opcional)'),
-                          subtitle: Text(_ubicacion == null
-                              ? 'Si no la pones, se guarda en la primera visita registrada'
-                              : '${_ubicacion!.latitude.toStringAsFixed(5)}, ${_ubicacion!.longitude.toStringAsFixed(5)}'),
-                          trailing: IconButton(icon: const Icon(Icons.my_location), onPressed: _usarGps),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Text('Foto de la mascota', style: Theme.of(context).textTheme.titleSmall),
-                      const SizedBox(height: 8),
-                      if (_foto != null)
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(12),
-                          child: Image.file(File(_foto!.path), height: 200, fit: BoxFit.cover),
-                        ),
-                      OutlinedButton.icon(
-                        onPressed: _elegirFoto,
-                        icon: const Icon(Icons.add_a_photo),
-                        label: Text(_foto == null ? 'Agregar foto (cámara o galería)' : 'Cambiar foto'),
-                      ),
-                      const SizedBox(height: 24),
-                      FilledButton(
-                        onPressed: _guardando ? null : _guardar,
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          child: _guardando
-                              ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                              : const Text('Guardar paciente'),
-                        ),
-                      ),
-                    ],
+          ? Center(
+              child: Padding(padding: const EdgeInsets.all(24), child: Text(_error!)),
+            )
+          : Form(
+              key: _formKey,
+              child: ListView(
+                padding: const EdgeInsets.all(16),
+                children: [
+                  Text('Dueño', style: Theme.of(context).textTheme.titleMedium),
+                  Card(
+                    child: ListTile(
+                      leading: const Icon(Icons.person),
+                      title: Text(_dueno?.nombre ?? 'Toca para buscar o crear el dueño'),
+                      subtitle: _dueno == null
+                          ? null
+                          : Text('Tel: ${_dueno!.telefono ?? '-'}\n${_dueno!.direccion ?? ''}'),
+                      trailing: const Icon(Icons.search),
+                      onTap: _elegirDueno,
+                    ),
                   ),
-                ),
+                  const SizedBox(height: 16),
+                  Text('Mascota', style: Theme.of(context).textTheme.titleMedium),
+                  const SizedBox(height: 8),
+                  TextFormField(
+                    controller: _nombre,
+                    decoration: InputDecoration(labelText: 'Nombre', border: borde),
+                    validator: (v) => (v == null || v.trim().isEmpty) ? 'Escribe el nombre' : null,
+                  ),
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<int>(
+                    initialValue: _especieId,
+                    decoration: InputDecoration(labelText: 'Especie', border: borde),
+                    items: [for (final e in _especies) DropdownMenuItem(value: e.id, child: Text(e.nombre))],
+                    onChanged: _elegirEspecie,
+                    validator: (v) => v == null ? 'Elige la especie' : null,
+                  ),
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<int>(
+                    key: ValueKey(_especieId), // se reinicia al cambiar de especie
+                    initialValue: _razaId,
+                    decoration: InputDecoration(labelText: 'Raza', border: borde),
+                    items: [for (final r in _razas) DropdownMenuItem(value: r.id, child: Text(r.nombre))],
+                    onChanged: (v) => setState(() => _razaId = v),
+                    validator: (v) => v == null ? 'Elige la raza' : null,
+                  ),
+                  const SizedBox(height: 12),
+                  Card(
+                    child: ListTile(
+                      leading: const Icon(Icons.cake),
+                      title: const Text('Fecha de nacimiento aproximada'),
+                      subtitle: Text(_nacimiento == null ? 'Opcional' : Fechas.soloFecha(_nacimiento!)),
+                      onTap: _elegirNacimiento,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<String>(
+                    initialValue: _tecnicoId,
+                    isExpanded: true,
+                    decoration: InputDecoration(labelText: 'Técnico asignado', border: borde),
+                    items: [
+                      for (final t in _tecnicos)
+                        DropdownMenuItem(
+                          value: t.id,
+                          child: Text('${t.nombre}${t.zonaNombre != null ? ' · ${t.zonaNombre}' : ''}'),
+                        ),
+                    ],
+                    onChanged: (v) => setState(() => _tecnicoId = v),
+                    validator: (v) => v == null ? 'Elige el técnico' : null,
+                  ),
+                  if (_tecnicos.isEmpty)
+                    const Padding(
+                      padding: EdgeInsets.only(top: 4),
+                      child: Text('No tienes técnicos. El Director debe asignártelos.'),
+                    ),
+                  const SizedBox(height: 12),
+                  Card(
+                    child: ListTile(
+                      leading: const Icon(Icons.location_on),
+                      title: const Text('Ubicación de la casa (opcional)'),
+                      subtitle: Text(
+                        _ubicacion == null
+                            ? 'Si no la pones, se guarda en la primera visita registrada'
+                            : '${_ubicacion!.latitude.toStringAsFixed(5)}, ${_ubicacion!.longitude.toStringAsFixed(5)}',
+                      ),
+                      trailing: IconButton(icon: const Icon(Icons.my_location), onPressed: _usarGps),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text('Foto de la mascota', style: Theme.of(context).textTheme.titleSmall),
+                  const SizedBox(height: 8),
+                  if (_foto != null)
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: Image.file(File(_foto!.path), height: 200, fit: BoxFit.cover),
+                    ),
+                  OutlinedButton.icon(
+                    onPressed: _elegirFoto,
+                    icon: const Icon(Icons.add_a_photo),
+                    label: Text(_foto == null ? 'Agregar foto (cámara o galería)' : 'Cambiar foto'),
+                  ),
+                  const SizedBox(height: 24),
+                  FilledButton(
+                    onPressed: _guardando ? null : _guardar,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      child: _guardando
+                          ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                          : const Text('Guardar paciente'),
+                    ),
+                  ),
+                ],
+              ),
+            ),
     );
   }
 }
@@ -370,39 +374,54 @@ class _DialogoDuenoState extends State<_DialogoDueno> {
       content: SizedBox(
         width: double.maxFinite,
         child: _creando
-            ? Column(mainAxisSize: MainAxisSize.min, children: [
-                TextField(controller: _nombre, decoration: const InputDecoration(labelText: 'Nombre')),
-                TextField(
-                  controller: _telefono,
-                  keyboardType: TextInputType.phone,
-                  decoration: const InputDecoration(labelText: 'Teléfono'),
-                ),
-                TextField(controller: _direccion, decoration: const InputDecoration(labelText: 'Dirección')),
-                if (_error != null) Text(_error!, style: const TextStyle(color: Colors.red)),
-              ])
-            : Column(mainAxisSize: MainAxisSize.min, children: [
-                TextField(
-                  controller: _buscar,
-                  decoration: InputDecoration(
-                    labelText: 'Nombre o teléfono',
-                    suffixIcon: IconButton(icon: const Icon(Icons.search), onPressed: _hacerBusqueda),
+            ? Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: _nombre,
+                    decoration: const InputDecoration(labelText: 'Nombre'),
                   ),
-                  onSubmitted: (_) => _hacerBusqueda(),
-                ),
-                if (_ocupado) const LinearProgressIndicator(),
-                if (_error != null) Text(_error!, style: const TextStyle(color: Colors.red)),
-                Flexible(
-                  child: ListView(shrinkWrap: true, children: [
-                    for (final d in _resultados)
-                      ListTile(
-                        title: Text(d.nombre),
-                        subtitle: Text(d.telefono ?? '-'),
-                        onTap: () => Navigator.pop(context, d),
-                      ),
-                    if (!_ocupado && _resultados.isEmpty) const ListTile(title: Text('Sin resultados')),
-                  ]),
-                ),
-              ]),
+                  TextField(
+                    controller: _telefono,
+                    keyboardType: TextInputType.phone,
+                    decoration: const InputDecoration(labelText: 'Teléfono'),
+                  ),
+                  TextField(
+                    controller: _direccion,
+                    decoration: const InputDecoration(labelText: 'Dirección'),
+                  ),
+                  if (_error != null) Text(_error!, style: const TextStyle(color: Colors.red)),
+                ],
+              )
+            : Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: _buscar,
+                    decoration: InputDecoration(
+                      labelText: 'Nombre o teléfono',
+                      suffixIcon: IconButton(icon: const Icon(Icons.search), onPressed: _hacerBusqueda),
+                    ),
+                    onSubmitted: (_) => _hacerBusqueda(),
+                  ),
+                  if (_ocupado) const LinearProgressIndicator(),
+                  if (_error != null) Text(_error!, style: const TextStyle(color: Colors.red)),
+                  Flexible(
+                    child: ListView(
+                      shrinkWrap: true,
+                      children: [
+                        for (final d in _resultados)
+                          ListTile(
+                            title: Text(d.nombre),
+                            subtitle: Text(d.telefono ?? '-'),
+                            onTap: () => Navigator.pop(context, d),
+                          ),
+                        if (!_ocupado && _resultados.isEmpty) const ListTile(title: Text('Sin resultados')),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
       ),
       actions: [
         TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),

@@ -23,11 +23,14 @@ class PacientesRepository {
   Paciente _paciente(dynamic data) => Paciente.fromJson(Map<String, dynamic>.from(data as Map));
 
   Future<List<Paciente>> listar({String? buscar, int? especieId, String? tecnicoId}) async {
-    final r = await _api.dio.get('/api/pacientes', queryParameters: {
-      if (buscar != null && buscar.isNotEmpty) 'buscar': buscar,
-      'especieId': ?especieId,
-      'tecnicoId': ?tecnicoId,
-    });
+    final r = await _api.dio.get(
+      '/api/pacientes',
+      queryParameters: {
+        if (buscar != null && buscar.isNotEmpty) 'buscar': buscar,
+        'especieId': ?especieId,
+        'tecnicoId': ?tecnicoId,
+      },
+    );
     return (r.data as List).map(_paciente).toList();
   }
 
@@ -41,15 +44,18 @@ class PacientesRepository {
     double? latitud,
     double? longitud,
   }) async {
-    final r = await _api.dio.post('/api/pacientes', data: {
-      'nombre': nombre,
-      'fechaNacimiento': fechaNacimiento == null ? null : Fechas.soloFecha(fechaNacimiento),
-      'razaId': razaId,
-      'duenoId': duenoId,
-      'tecnicoId': tecnicoId,
-      'latitud': latitud,
-      'longitud': longitud,
-    });
+    final r = await _api.dio.post(
+      '/api/pacientes',
+      data: {
+        'nombre': nombre,
+        'fechaNacimiento': fechaNacimiento == null ? null : Fechas.soloFecha(fechaNacimiento),
+        'razaId': razaId,
+        'duenoId': duenoId,
+        'tecnicoId': tecnicoId,
+        'latitud': latitud,
+        'longitud': longitud,
+      },
+    );
     return _paciente(r.data);
   }
 

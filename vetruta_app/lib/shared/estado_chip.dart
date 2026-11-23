@@ -36,11 +36,14 @@ class LeyendaEstados extends StatelessWidget {
       runSpacing: 4,
       children: [
         for (final e in EstadoVisita.values)
-          Row(mainAxisSize: MainAxisSize.min, children: [
-            Icon(Icons.circle, size: 12, color: e.color),
-            const SizedBox(width: 4),
-            Text(e.etiqueta, style: const TextStyle(fontSize: 12)),
-          ]),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.circle, size: 12, color: e.color),
+              const SizedBox(width: 4),
+              Text(e.etiqueta, style: const TextStyle(fontSize: 12)),
+            ],
+          ),
       ],
     );
   }

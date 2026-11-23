@@ -43,10 +43,7 @@ class _ProgramarVisitaScreenState extends State<ProgramarVisitaScreen> {
   Future<void> _cargarListas() async {
     final api = context.read<ApiClient>();
     try {
-      final resultados = await Future.wait([
-        PacientesRepository(api).listar(),
-        CatalogosRepository(api).servicios(),
-      ]);
+      final resultados = await Future.wait([PacientesRepository(api).listar(), CatalogosRepository(api).servicios()]);
       if (!mounted) return;
       setState(() {
         // Solo pacientes con técnico: la API no deja programar si no tiene.
@@ -98,11 +95,8 @@ class _ProgramarVisitaScreenState extends State<ProgramarVisitaScreen> {
     }
     setState(() => _guardando = true);
     try {
-      await VisitasRepository(context.read<ApiClient>()).programar(
-        pacienteId: _pacienteId!,
-        servicioId: _servicioId!,
-        fechaProgramada: _fecha!,
-      );
+      await VisitasRepository(context.read<ApiClient>())
+          .programar(pacienteId: _pacienteId!, servicioId: _servicioId!, fechaProgramada: _fecha!);
       if (!mounted) return;
       _aviso('Visita programada.');
       Navigator.pop(context, true);
@@ -120,70 +114,74 @@ class _ProgramarVisitaScreenState extends State<ProgramarVisitaScreen> {
       body: _cargando
           ? const Center(child: CircularProgressIndicator())
           : _error != null
-              ? Center(child: Padding(padding: const EdgeInsets.all(24), child: Text(_error!)))
-              : Form(
-                  key: _formKey,
-                  child: ListView(
-                    padding: const EdgeInsets.all(16),
-                    children: [
-                      if (_pacientes.isEmpty)
-                        const Padding(
-                          padding: EdgeInsets.only(bottom: 16),
-                          child: Text('No hay pacientes con técnico asignado para programar.'),
+          ? Center(
+              child: Padding(padding: const EdgeInsets.all(24), child: Text(_error!)),
+            )
+          : Form(
+              key: _formKey,
+              child: ListView(
+                padding: const EdgeInsets.all(16),
+                children: [
+                  if (_pacientes.isEmpty)
+                    const Padding(
+                      padding: EdgeInsets.only(bottom: 16),
+                      child: Text('No hay pacientes con técnico asignado para programar.'),
+                    ),
+                  DropdownButtonFormField<int>(
+                    initialValue: _pacienteId,
+                    isExpanded: true,
+                    decoration: const InputDecoration(labelText: 'Paciente', border: OutlineInputBorder()),
+                    items: [
+                      for (final p in _pacientes)
+                        DropdownMenuItem(
+                          value: p.id,
+                          child: Text(
+                            '${p.nombre} (${p.especieNombre}) · ${p.duenoNombre}',
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
-                      DropdownButtonFormField<int>(
-                        initialValue: _pacienteId,
-                        isExpanded: true,
-                        decoration: const InputDecoration(labelText: 'Paciente', border: OutlineInputBorder()),
-                        items: [
-                          for (final p in _pacientes)
-                            DropdownMenuItem(
-                              value: p.id,
-                              child: Text('${p.nombre} (${p.especieNombre}) · ${p.duenoNombre}',
-                                  overflow: TextOverflow.ellipsis),
-                            ),
-                        ],
-                        onChanged: (v) => setState(() => _pacienteId = v),
-                        validator: (v) => v == null ? 'Elige el paciente' : null,
-                      ),
-                      const SizedBox(height: 16),
-                      DropdownButtonFormField<int>(
-                        initialValue: _servicioId,
-                        isExpanded: true,
-                        decoration: const InputDecoration(labelText: 'Servicio', border: OutlineInputBorder()),
-                        items: [
-                          for (final s in _servicios)
-                            DropdownMenuItem(
-                              value: s.id,
-                              child: Text(s.descripcion, overflow: TextOverflow.ellipsis),
-                            ),
-                        ],
-                        onChanged: (v) => setState(() => _servicioId = v),
-                        validator: (v) => v == null ? 'Elige el servicio' : null,
-                      ),
-                      const SizedBox(height: 16),
-                      Card(
-                        child: ListTile(
-                          leading: const Icon(Icons.calendar_month),
-                          title: const Text('Fecha y hora'),
-                          subtitle: Text(_fecha == null ? 'Toca para elegir' : Fechas.larga(_fecha!)),
-                          trailing: const Icon(Icons.edit),
-                          onTap: _elegirFecha,
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                      FilledButton(
-                        onPressed: _guardando ? null : _guardar,
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          child: _guardando
-                              ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                              : const Text('Programar'),
-                        ),
-                      ),
                     ],
+                    onChanged: (v) => setState(() => _pacienteId = v),
+                    validator: (v) => v == null ? 'Elige el paciente' : null,
                   ),
-                ),
+                  const SizedBox(height: 16),
+                  DropdownButtonFormField<int>(
+                    initialValue: _servicioId,
+                    isExpanded: true,
+                    decoration: const InputDecoration(labelText: 'Servicio', border: OutlineInputBorder()),
+                    items: [
+                      for (final s in _servicios)
+                        DropdownMenuItem(
+                          value: s.id,
+                          child: Text(s.descripcion, overflow: TextOverflow.ellipsis),
+                        ),
+                    ],
+                    onChanged: (v) => setState(() => _servicioId = v),
+                    validator: (v) => v == null ? 'Elige el servicio' : null,
+                  ),
+                  const SizedBox(height: 16),
+                  Card(
+                    child: ListTile(
+                      leading: const Icon(Icons.calendar_month),
+                      title: const Text('Fecha y hora'),
+                      subtitle: Text(_fecha == null ? 'Toca para elegir' : Fechas.larga(_fecha!)),
+                      trailing: const Icon(Icons.edit),
+                      onTap: _elegirFecha,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  FilledButton(
+                    onPressed: _guardando ? null : _guardar,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      child: _guardando
+                          ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                          : const Text('Programar'),
+                    ),
+                  ),
+                ],
+              ),
+            ),
     );
   }
 }

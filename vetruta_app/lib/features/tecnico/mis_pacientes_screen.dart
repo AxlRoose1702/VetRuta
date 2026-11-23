@@ -42,14 +42,20 @@ class _MisPacientesVista extends StatelessWidget {
           padding: const EdgeInsets.all(8),
           children: [
             if (prov.cargando && prov.pacientes.isEmpty)
-              const Padding(padding: EdgeInsets.all(32), child: Center(child: CircularProgressIndicator())),
+              const Padding(
+                padding: EdgeInsets.all(32),
+                child: Center(child: CircularProgressIndicator()),
+              ),
             if (prov.error != null)
               Padding(
                 padding: const EdgeInsets.all(16),
                 child: Text(prov.error!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
               ),
             if (!prov.cargando && prov.error == null && prov.pacientes.isEmpty)
-              const Padding(padding: EdgeInsets.all(32), child: Center(child: Text('No tienes pacientes asignados.'))),
+              const Padding(
+                padding: EdgeInsets.all(32),
+                child: Center(child: Text('No tienes pacientes asignados.')),
+              ),
             if (prov.pacientes.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.all(8),

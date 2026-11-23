@@ -21,11 +21,11 @@ class Dueno {
   final String? direccion;
   const Dueno({required this.id, required this.nombre, this.telefono, this.direccion});
   factory Dueno.fromJson(Map<String, dynamic> j) => Dueno(
-        id: j['id'] as int,
-        nombre: j['nombre'] as String,
-        telefono: j['telefono'] as String?,
-        direccion: j['direccion'] as String?,
-      );
+    id: j['id'] as int,
+    nombre: j['nombre'] as String,
+    telefono: j['telefono'] as String?,
+    direccion: j['direccion'] as String?,
+  );
 }
 
 /// Usuario de la API (UsuarioResponse). Por ahora se usa para elegir técnicos.
@@ -35,6 +35,7 @@ class Usuario {
   final String? email;
   final String? rol;
   final bool activo;
+  final int? zonaId;
   final String? zonaNombre;
   final String? medicoId;
   final String? medicoNombre;
@@ -45,19 +46,31 @@ class Usuario {
     this.email,
     this.rol,
     this.activo = true,
+    this.zonaId,
     this.zonaNombre,
     this.medicoId,
     this.medicoNombre,
   });
 
   factory Usuario.fromJson(Map<String, dynamic> j) => Usuario(
-        id: j['id'].toString(),
-        nombre: (j['nombreCompleto'] ?? j['nombre'] ?? j['email'] ?? '').toString(),
-        email: j['email'] as String?,
-        rol: j['rol']?.toString(),
-        activo: j['activo'] as bool? ?? true,
-        zonaNombre: j['zonaNombre'] as String?,
-        medicoId: j['medicoId']?.toString(),
-        medicoNombre: j['medicoNombre'] as String?,
-      );
+    id: j['id'].toString(),
+    nombre: (j['nombreCompleto'] ?? j['nombre'] ?? j['email'] ?? '').toString(),
+    email: j['email'] as String?,
+    rol: j['rol']?.toString(),
+    activo: j['activo'] as bool? ?? true,
+    zonaId: j['zonaId'] as int?,
+    zonaNombre: j['zonaNombre'] as String?,
+    medicoId: j['medicoId']?.toString(),
+    medicoNombre: j['medicoNombre'] as String?,
+  );
+}
+
+/// Zona de trabajo de los técnicos (GET /api/zonas).
+class Zona {
+  final int id;
+  final String nombre;
+  final bool activa;
+  const Zona(this.id, this.nombre, {this.activa = true});
+  factory Zona.fromJson(Map<String, dynamic> j) =>
+      Zona(j['id'] as int, j['nombre'] as String, activa: (j['activa'] ?? j['activo'] ?? true) as bool);
 }

@@ -57,69 +57,71 @@ class _DetalleVisitaScreenState extends State<DetalleVisitaScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('Detalle de visita')),
       body: _error != null
-          ? Center(child: Padding(padding: const EdgeInsets.all(24), child: Text(_error!)))
+          ? Center(
+              child: Padding(padding: const EdgeInsets.all(24), child: Text(_error!)),
+            )
           : v == null
-              ? const Center(child: CircularProgressIndicator())
-              : RefreshIndicator(
-                  onRefresh: _cargar,
-                  child: ListView(
-                    padding: const EdgeInsets.all(16),
+          ? const Center(child: CircularProgressIndicator())
+          : RefreshIndicator(
+              onRefresh: _cargar,
+              child: ListView(
+                padding: const EdgeInsets.all(16),
+                children: [
+                  Row(
                     children: [
-                      Row(children: [
-                        Expanded(
-                          child: Text(v.pacienteNombre, style: Theme.of(context).textTheme.headlineSmall),
-                        ),
-                        EstadoChip(v.estado),
-                      ]),
-                      Text('${v.especieNombre} · Dueño: ${v.duenoNombre}'),
-                      const SizedBox(height: 16),
-                      _Dato('Servicio', v.servicioNombre),
-                      _Dato('Fecha programada', Fechas.larga(v.fechaProgramada)),
-                      _Dato('Técnico', v.tecnicoNombre ?? '-'),
-                      if (v.estado == EstadoVisita.realizada) ...[
-                        const Divider(height: 32),
-                        Card(
-                          color: Theme.of(context).colorScheme.secondaryContainer,
-                          child: const ListTile(
-                            leading: Icon(Icons.lock_outline),
-                            title: Text('Visita registrada'),
-                            subtitle: Text('Información histórica de solo lectura.'),
-                          ),
-                        ),
-                        _Dato('Registrada el', v.fechaRegistro == null ? '-' : Fechas.larga(v.fechaRegistro!)),
-                        _Dato('Peso', '${v.pesoKg} kg'),
-                        _Dato('Altura', '${v.alturaCm} cm'),
-                        _Dato('Temperatura', '${v.temperatura} °C'),
-                        _Dato('Condición corporal', v.condicion ?? '-'),
-                        _Dato('Observaciones', v.observaciones ?? '-'),
-                        _Dato('Ubicación', '${v.latitud}, ${v.longitud}'),
-                        const SizedBox(height: 8),
-                        if (v.fotoUrl != null)
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(12),
-                            child: Image.network(
-                              '${AppConfig.apiUrl}${v.fotoUrl}',
-                              fit: BoxFit.cover,
-                              errorBuilder: (_, _, _) => const Text('No se pudo cargar la foto'),
-                            ),
-                          ),
-                      ],
-                      if (v.estado == EstadoVisita.cancelada)
-                        const Padding(
-                          padding: EdgeInsets.only(top: 16),
-                          child: Text('Esta visita fue cancelada por el médico.'),
-                        ),
-                      if (v.sePuedeRegistrar && rol == Roles.tecnico) ...[
-                        const SizedBox(height: 24),
-                        FilledButton.icon(
-                          onPressed: _registrar,
-                          icon: const Icon(Icons.assignment_turned_in),
-                          label: const Text('Registrar visita'),
-                        ),
-                      ],
+                      Expanded(child: Text(v.pacienteNombre, style: Theme.of(context).textTheme.headlineSmall)),
+                      EstadoChip(v.estado),
                     ],
                   ),
-                ),
+                  Text('${v.especieNombre} · Dueño: ${v.duenoNombre}'),
+                  const SizedBox(height: 16),
+                  _Dato('Servicio', v.servicioNombre),
+                  _Dato('Fecha programada', Fechas.larga(v.fechaProgramada)),
+                  _Dato('Técnico', v.tecnicoNombre ?? '-'),
+                  if (v.estado == EstadoVisita.realizada) ...[
+                    const Divider(height: 32),
+                    Card(
+                      color: Theme.of(context).colorScheme.secondaryContainer,
+                      child: const ListTile(
+                        leading: Icon(Icons.lock_outline),
+                        title: Text('Visita registrada'),
+                        subtitle: Text('Información histórica de solo lectura.'),
+                      ),
+                    ),
+                    _Dato('Registrada el', v.fechaRegistro == null ? '-' : Fechas.larga(v.fechaRegistro!)),
+                    _Dato('Peso', '${v.pesoKg} kg'),
+                    _Dato('Altura', '${v.alturaCm} cm'),
+                    _Dato('Temperatura', '${v.temperatura} °C'),
+                    _Dato('Condición corporal', v.condicion ?? '-'),
+                    _Dato('Observaciones', v.observaciones ?? '-'),
+                    _Dato('Ubicación', '${v.latitud}, ${v.longitud}'),
+                    const SizedBox(height: 8),
+                    if (v.fotoUrl != null)
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Image.network(
+                          '${AppConfig.apiUrl}${v.fotoUrl}',
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, _, _) => const Text('No se pudo cargar la foto'),
+                        ),
+                      ),
+                  ],
+                  if (v.estado == EstadoVisita.cancelada)
+                    const Padding(
+                      padding: EdgeInsets.only(top: 16),
+                      child: Text('Esta visita fue cancelada por el médico.'),
+                    ),
+                  if (v.sePuedeRegistrar && rol == Roles.tecnico) ...[
+                    const SizedBox(height: 24),
+                    FilledButton.icon(
+                      onPressed: _registrar,
+                      icon: const Icon(Icons.assignment_turned_in),
+                      label: const Text('Registrar visita'),
+                    ),
+                  ],
+                ],
+              ),
+            ),
     );
   }
 }

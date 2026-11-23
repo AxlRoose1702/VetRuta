@@ -88,9 +88,7 @@ class _MapaVistaState extends State<_MapaVista> {
           children: [
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 16),
-              child: Text(
-                'Estos pacientes aún no tienen ubicación. Se guarda sola al registrar su primera visita.',
-              ),
+              child: Text('Estos pacientes aún no tienen ubicación. Se guarda sola al registrar su primera visita.'),
             ),
             for (final i in items)
               ListTile(
@@ -132,9 +130,7 @@ class _MapaVistaState extends State<_MapaVista> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Mapa de pacientes'),
-        actions: [
-          IconButton(icon: const Icon(Icons.refresh), tooltip: 'Recargar', onPressed: prov.cargar),
-        ],
+        actions: [IconButton(icon: const Icon(Icons.refresh), tooltip: 'Recargar', onPressed: prov.cargar)],
       ),
       body: Stack(
         children: [
@@ -158,13 +154,24 @@ class _MapaVistaState extends State<_MapaVista> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Wrap(spacing: 12, runSpacing: 4, children: [
-                      for (final e in EstadoPaciente.values)
-                        Row(mainAxisSize: MainAxisSize.min, children: [
-                          Icon(Icons.location_on, size: 16, color: e == EstadoPaciente.sinVisita ? Colors.lightBlue : e.color),
-                          Text(e.etiqueta, style: const TextStyle(fontSize: 12)),
-                        ]),
-                    ]),
+                    Wrap(
+                      spacing: 12,
+                      runSpacing: 4,
+                      children: [
+                        for (final e in EstadoPaciente.values)
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.location_on,
+                                size: 16,
+                                color: e == EstadoPaciente.sinVisita ? Colors.lightBlue : e.color,
+                              ),
+                              Text(e.etiqueta, style: const TextStyle(fontSize: 12)),
+                            ],
+                          ),
+                      ],
+                    ),
                     if (prov.error != null)
                       Text(prov.error!, style: TextStyle(color: Theme.of(context).colorScheme.error)),
                     if (sinUbicacion.isNotEmpty)

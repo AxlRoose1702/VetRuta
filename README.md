@@ -342,6 +342,13 @@ El enunciado deja algunos puntos abiertos. Estas son las decisiones tomadas:
 
 ## App Flutter
 
-_Pendiente: requisitos (Flutter SDK, Android SDK, llave de Google Maps), cómo apuntar la app a la URL de la API y cómo correrla en un emulador o dispositivo Android._
+La app Android está en `vetruta_app/`. Requisitos, configuración (URL de la API y llave de Google Maps), cómo correrla, arquitectura y decisiones: ver [vetruta_app/README.md](vetruta_app/README.md).
 
-Nota para el emulador de Android: `localhost` del emulador no es tu PC. Usa `https://10.0.2.2:7262` o el perfil `http` de la API.
+Resumen rápido:
+
+1. Corre la API con el perfil `http`.
+2. En `vetruta_app/lib/core/config.dart` pon el puerto http de la API (`http://10.0.2.2:5053` desde el emulador).
+3. Agrega `MAPS_API_KEY=<tu_api_key>` a `vetruta_app/android/local.properties`.
+4. `cd vetruta_app`, `flutter pub get` y `flutter run`.
+
+Nota para el emulador de Android: `localhost` del emulador no es tu PC. Usa `https://10.0.2.2:5053` o el perfil `http` de la API.

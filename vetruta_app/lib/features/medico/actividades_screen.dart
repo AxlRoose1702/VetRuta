@@ -23,7 +23,12 @@ class ActividadesScreen extends StatefulWidget {
 }
 
 class _ActividadesScreenState extends State<ActividadesScreen> {
-  static const _pestanas = [EstadoVisita.pendiente, EstadoVisita.atrasada, EstadoVisita.realizada, EstadoVisita.cancelada];
+  static const _pestanas = [
+    EstadoVisita.pendiente,
+    EstadoVisita.atrasada,
+    EstadoVisita.realizada,
+    EstadoVisita.cancelada,
+  ];
 
   late DateTimeRange _rango;
   String? _tecnicoId;
@@ -37,9 +42,12 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
     super.initState();
     final hoy = DateTime.now();
     _rango = DateTimeRange(start: DateTime(hoy.year, hoy.month, 1), end: DateTime(hoy.year, hoy.month + 1, 0));
-    widget.cargarTecnicos(context).then((t) {
-      if (mounted) setState(() => _tecnicos = t);
-    }).catchError((_) {});
+    widget
+        .cargarTecnicos(context)
+        .then((t) {
+          if (mounted) setState(() => _tecnicos = t);
+        })
+        .catchError((_) {});
     _cargar();
   }
 
@@ -82,49 +90,58 @@ class _ActividadesScreenState extends State<ActividadesScreen> {
           bottom: TabBar(
             isScrollable: true,
             tabs: [
-              for (final e in _pestanas)
-                Tab(text: '${e.etiqueta} (${_visitas.where((v) => v.estado == e).length})'),
+              for (final e in _pestanas) Tab(text: '${e.etiqueta} (${_visitas.where((v) => v.estado == e).length})'),
             ],
           ),
         ),
-        body: Column(children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
-            child: Row(children: [
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: _elegirRango,
-                  icon: const Icon(Icons.date_range),
-                  label: Text('${Fechas.soloFecha(_rango.start)} a ${Fechas.soloFecha(_rango.end)}',
-                      style: const TextStyle(fontSize: 12)),
-                ),
+        body: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: _elegirRango,
+                      icon: const Icon(Icons.date_range),
+                      label: Text(
+                        '${Fechas.soloFecha(_rango.start)} a ${Fechas.soloFecha(_rango.end)}',
+                        style: const TextStyle(fontSize: 12),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: DropdownButtonFormField<String?>(
+                      initialValue: _tecnicoId,
+                      isExpanded: true,
+                      decoration: const InputDecoration(
+                        labelText: 'Técnico',
+                        isDense: true,
+                        border: OutlineInputBorder(),
+                      ),
+                      items: [
+                        const DropdownMenuItem<String?>(value: null, child: Text('Todos')),
+                        for (final t in _tecnicos) DropdownMenuItem<String?>(value: t.id, child: Text(t.nombre)),
+                      ],
+                      onChanged: (v) {
+                        setState(() => _tecnicoId = v);
+                        _cargar();
+                      },
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: DropdownButtonFormField<String?>(
-                  initialValue: _tecnicoId,
-                  isExpanded: true,
-                  decoration: const InputDecoration(labelText: 'Técnico', isDense: true, border: OutlineInputBorder()),
-                  items: [
-                    const DropdownMenuItem<String?>(value: null, child: Text('Todos')),
-                    for (final t in _tecnicos) DropdownMenuItem<String?>(value: t.id, child: Text(t.nombre)),
-                  ],
-                  onChanged: (v) {
-                    setState(() => _tecnicoId = v);
-                    _cargar();
-                  },
-                ),
+            ),
+            if (_cargando) const LinearProgressIndicator(),
+            if (_error != null) Padding(padding: const EdgeInsets.all(12), child: Text(_error!)),
+            Expanded(
+              child: TabBarView(
+                children: [for (final e in _pestanas) _lista(_visitas.where((v) => v.estado == e).toList())],
               ),
-            ]),
-          ),
-          if (_cargando) const LinearProgressIndicator(),
-          if (_error != null) Padding(padding: const EdgeInsets.all(12), child: Text(_error!)),
-          Expanded(
-            child: TabBarView(children: [
-              for (final e in _pestanas) _lista(_visitas.where((v) => v.estado == e).toList()),
-            ]),
-          ),
-        ]),
+            ),
+          ],
+        ),
       ),
     );
   }

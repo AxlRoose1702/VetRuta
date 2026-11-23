@@ -9,10 +9,7 @@ class Servicio {
 
   factory Servicio.fromJson(Map<String, dynamic> j) {
     // Busca la duración aunque el campo se llame distinto (duracionMinutos, duracionMin, duracion).
-    final claveDuracion = j.keys.firstWhere(
-      (k) => k.toLowerCase().startsWith('duracion'),
-      orElse: () => '',
-    );
+    final claveDuracion = j.keys.firstWhere((k) => k.toLowerCase().startsWith('duracion'), orElse: () => '');
     return Servicio(
       id: j['id'] as int,
       nombre: j['nombre'] as String,
